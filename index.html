@@ -96,11 +96,14 @@
             <div class="flex flex-col items-center mb-6">
                 <span class="text-slate-400 font-medium mb-2.5 text-sm">Rozsah učiva (Syllabus):</span>
                 <div class="inline-flex rounded-xl p-1 bg-slate-955 border border-slate-800">
-                    <button onclick="setSyllabusMode('L3')" id="btn-syllabus-l3" class="px-5 py-2 rounded-lg font-bold text-xs transition-all bg-amber-500 text-slate-955 shadow">
+                    <button onclick="setSyllabusMode('L3')" id="btn-syllabus-l3" class="px-4 py-2 rounded-lg font-bold text-xs transition-all bg-amber-500 text-slate-955 shadow">
                         Lekce 1 - 3 (Kompletní)
                     </button>
-                    <button onclick="setSyllabusMode('L2')" id="btn-syllabus-l2" class="px-5 py-2 rounded-lg font-bold text-xs transition-all text-slate-400 hover:text-slate-200">
+                    <button onclick="setSyllabusMode('L2')" id="btn-syllabus-l2" class="px-4 py-2 rounded-lg font-bold text-xs transition-all text-slate-400 hover:text-slate-200">
                         Lekce 1 - 2 (Lekce 0, 1 a 2)
+                    </button>
+                    <button onclick="setSyllabusMode('Fiesta')" id="btn-syllabus-fiesta" class="px-4 py-2 rounded-lg font-bold text-xs transition-all text-slate-400 hover:text-slate-200">
+                        Režim Fiesta 🎉
                     </button>
                 </div>
             </div>
@@ -293,7 +296,7 @@
                 </div>
             </div>
 
-            <!-- NOVÝ STABILNÍ KONTEJNER PRO TLAČÍTKA -->
+            <!-- NEW STABLE BUTTONS CONTAINER -->
             <div class="w-full max-w-md mx-auto h-32 flex flex-col items-center justify-center border-t border-slate-800 mt-6 pt-4 shrink-0 space-y-3">
                 <div class="w-full flex items-center justify-center h-12">
                     <!-- Tlačítko 1: Spustit další kartu (Zobrazeno pouze v přípravném mezikole) -->
@@ -458,7 +461,7 @@
                 },
                 1000: { 
                     q: "Přeložte celou větu ze 3. lekce: „Vstávám pozdě, protože chodím pozdě spát.“", 
-                    a: "Me levanto tarde porque me acuesto tarde.", 
+                    a: "Me levanto tarde protože me acuesto tarde.", 
                     hint: "Využijte zvratná slovesa 'levantarse' a 'acostarse' (změna o -> ue)." 
                 }
             },
@@ -684,11 +687,150 @@
             }
         };
 
+        // --- DATASET 3: REŽIM FIESTA 🎉 (Kompletně nová pokročilá obtížnost) ---
+        const gameDataFiesta = {
+            0: { // Slovíčka
+                200: {
+                    q: "Jak se španělsky řekne „víkend“?",
+                    a: "el fin de semana",
+                    hint: "Skládá se ze tří slov spojených předložkou."
+                },
+                400: {
+                    q: "Jak se španělsky řekne „dovolená na horách“?",
+                    a: "las vacaciones en la montaña",
+                    hint: "Výraz pro prázdniny/dovolenou (vacaciones) je vždy v ženském rodě množného čísla."
+                },
+                600: {
+                    q: "Přeložte do španělštiny spojení: „pěkná čepice a velká svačina“.",
+                    a: "una gorra bonita y un bocadillo grande",
+                    hint: "Svačina/sendvič se překládá jako 'bocadillo'. Nezapomeňte na shodu členů a koncovek přídavných jmen."
+                },
+                800: {
+                    q: "Přeložte do španělštiny spojení: „velká karimatka a malý spací pytel“.",
+                    a: "un aislante grande y un saco de dormir pequeño",
+                    hint: "Spací pytel je 'saco de dormir' (m.r.). Karimatka je 'aislante' (m.r.)."
+                },
+                1000: {
+                    q: "Přeložte do španělštiny spojení: „žlutá pláštěnka, nudný sport a úžasný nápad“.",
+                    a: "un impermeable amarillo, un deporte aburrido y una idea estupenda",
+                    hint: "Idea (nápad) je ženského rodu. Úžasný se vyjádří jako 'estupendo'."
+                }
+            },
+            1: { // Slovesa
+                200: {
+                    q: "Přeložte do přítomného času tvary: „já dělám“ a „ty hraješ“.",
+                    a: "hago, juegas",
+                    hint: "První sloveso je nepravidelné v 1. osobě (hacer), u druhého dochází ke kmenové změně u -> ue (jugar)."
+                },
+                400: {
+                    q: "Přeložte do budoucího času (pravidelné tvary): „budeme zpívat“ a „oni budou psát“.",
+                    a: "cantaremos, escribirán",
+                    hint: "U pravidelných sloves přidáváme koncovky budoucího času přímo k celému infinitivu."
+                },
+                600: {
+                    q: "Přeložte do minulého času (pravidelné tvary): „já jsem zpíval“ a „ty jsi psal“.",
+                    a: "canté, escribiste",
+                    hint: "Použijte jednoduchý minulý čas (Pretérito Indefinido). Koncovka u -ar je '-é', u -ir '-iste'."
+                },
+                800: {
+                    q: "Přeložte do jednoduchého budoucího času (nepravidelné tvary): „já budu mít“ a „on bude chtít“.",
+                    a: "tendré, querrá",
+                    hint: "Sloveso tener mění budoucí kmen na 'tendr-', querer na 'querr-'."
+                },
+                1000: {
+                    q: "Přeložte do minulého času (nepravidelné tvary): „já jsem měl“ a „oni byli / šli“.",
+                    a: "tuve, fueron",
+                    hint: "Minulý kmen od tener je 'tuv-'. Tvar sloves 'ser' a 'ir' v minulém čase je naprosto shodný."
+                }
+            },
+            2: { // Gramatika
+                200: {
+                    q: "Jak se španělsky řekne „první den“?",
+                    a: "el primer día",
+                    hint: "U řadové číslovky 'primero' dochází před podstatným jménem mužského rodu ke zkrácení."
+                },
+                400: {
+                    q: "Jak se španělsky řekne vyjádření času: „jsou 2 hodiny a 30 minut“?",
+                    a: "son las dos y media (nebo son las dos y treinta)",
+                    hint: "Používáme sloveso 'ser' v množném čísle a určitý člen ženského rodu množného čísla."
+                },
+                650: { // 600b row mapping key
+                    q: "Přeložte do španělštiny tato tři spojení: „svatý Antonio“, „svatá Juana“ a „svatý Tomás“.",
+                    a: "San Antonio, Santa Juana y Santo Tomás",
+                    hint: "Přídavné jméno 'Santo' se zkracuje na 'San' kromě jmen začínajících na 'To-' a 'Do-'."
+                },
+                800: {
+                    q: "Přeložte věty vyjadřující shodu: „Já také mluvím španělsky.“ a „Já také ne.“",
+                    a: "Yo también hablo español. / Yo tampoco.",
+                    hint: "Kladná shoda se vyjadřuje pomocí 'también', záporná pomocí 'tampoco'."
+                },
+                1000: {
+                    q: "Přeložte podmínkovou větu: „Můžeme si zahrát, jestli chcete.“ (vosotros / vy)",
+                    a: "Podemos jugar si queréis.",
+                    hint: "Podmínková spojka 'jestli/pokud' se řekne 'si' (bez přízvuku). Sloveso querer vyžaduje změnu e -> ie."
+                }
+            },
+            3: { // Fráze
+                200: {
+                    q: "Jak vyjádříte nespokojenost: „To je potíž / zádrhel / malér!“?",
+                    a: "¡Vaya rollo! (nebo ¡Qué rollo!)",
+                    hint: "Použijte citoslovce 'vaya' spojené s podstatným jménem 'rollo'."
+                },
+                400: {
+                    q: "Přeložte větu: „V každém případě přijedeme včas.“",
+                    a: "De todas maneras llegaremos a tiempo.",
+                    hint: "Fráze 'v každém případě' se překládá jako 'de todas maneras', 'přijet včas' jako 'llegar a tiempo' (použijte budoucí čas)."
+                },
+                600: {
+                    q: "Přeložte větu: „Stanujeme v pralese dlouho.“",
+                    a: "Acampamos en la selva mucho tiempo.",
+                    hint: "Stanovat/tábořit je 'acampar', prales 'la selva'."
+                },
+                800: {
+                    q: "Přeložte větu: „Je třeba sportovat a užívat si jídla.“",
+                    a: "Hay que hacer deporte y disfrutar de la comida.",
+                    hint: "Vazba 'je třeba' se překládá jako 'hay que'. Sloveso 'disfrutar' se pojí s předložkou 'de'."
+                },
+                1000: {
+                    q: "Přeložte větu: „Ačkoliv jsme prohráli zápas, užili jsme si to.“",
+                    a: "Aunque perdimos el partido, disfrutamos.",
+                    hint: "Ačkoliv = aunque. Prohrát minulý čas 1. os. mn. č. = perdimos (perder)."
+                }
+            },
+            4: { // Trivia (Stejné jako v L3)
+                200: { 
+                    q: "Vyjmenuj alespoň 5 zemí kde se mluví španělsky.", 
+                    a: "Například: España, México, Colombia, Argentina, Chile, Perú, Venezuela, Cuba, Ecuador, Bolivia.", 
+                    hint: "Můžete jmenovat zemi v Evropě a velké státy v Jižní a Střední Americe." 
+                },
+                400: { 
+                    q: "Jaká je oficiální měna („moneda“) Španělska?", 
+                    a: "euro", 
+                    hint: "Je to stejná měna jako v sousedním Německu nebo Francii." 
+                },
+                600: { 
+                    q: "Kdo napsal román Don Quijote de la Mancha?", 
+                    a: "Miguel de Cervantes (Saavedra)", 
+                    hint: "Slavný španělský spisovatel ze zlatého věku literatury (siglo de oro)." 
+                },
+                800: { 
+                    q: "Řekni jak se jmenuje španělský král, nebo španělský prezident parlamentu.", 
+                    a: "Král: Felipe VI. (Filip VI.). Prezident/předseda vlády (který je často takto označován): Pedro Sánchez.", 
+                    hint: "Král má jméno Felipe s římskou číslicí VI, premiér má příjmení Sánchez." 
+                },
+                1000: { 
+                    q: "Uveď hlavní město španělska a vyjmenuj alespoň 5 autonomních oblastí španělska.", 
+                    a: "Hlavní město: Madrid. Oblasti např.: Andalucía, Cataluña, Galicia, País Vasco, Canarias, Comunidad Valenciana, Aragón.", 
+                    hint: "Hlavní město leží ve středu země, regiony tvoří historické celky po obvodu i ostrovy." 
+                }
+            }
+        };
+
         // --- STAV APLIKACE ---
         let appState = {
             teams: [],
             numTeams: 4,
-            syllabusMode: "L3",    // "L3" pro Lekce 1-3, "L2" pro Lekce 1-2
+            syllabusMode: "L3",    // "L3" pro Lekce 1-3, "L2" pro Lekce 1-2, "Fiesta" pro Režim Fiesta
             currentQuestion: null, // { catIdx, val, data, hintUsed }
             answeredQuestions: {}, // Formát "catIdx-val": true
             currentTurnIdx: 0,     // Index týmu na tahu
@@ -852,7 +994,6 @@
         };
 
         // --- INICIALIZACE A SPUŠTĚNÍ HRY ---
-        // OPRAVENO: Robustní asynchronní kontrola stavu dokumentu pro spolehlivou inicializaci na všech platformách
         function initApp() {
             renderTeamInputs();
             updateUndoRedoButtons();
@@ -861,19 +1002,26 @@
         if (document.readyState === 'loading') {
             window.addEventListener('DOMContentLoaded', initApp);
         } else {
-            initApp();
+            setTimeout(initApp, 10);
         }
 
+        // Upraveno pro podporu Fiesta režimu
         function setSyllabusMode(mode) {
             appState.syllabusMode = mode;
             const btnL3 = document.getElementById('btn-syllabus-l3');
             const btnL2 = document.getElementById('btn-syllabus-l2');
+            const btnFiesta = document.getElementById('btn-syllabus-fiesta');
+            
+            btnL3.className = "px-4 py-2 rounded-lg font-bold text-xs transition-all text-slate-400 hover:text-slate-200";
+            btnL2.className = "px-4 py-2 rounded-lg font-bold text-xs transition-all text-slate-400 hover:text-slate-200";
+            btnFiesta.className = "px-4 py-2 rounded-lg font-bold text-xs transition-all text-slate-400 hover:text-slate-200";
+
             if (mode === 'L3') {
                 btnL3.className = "px-5 py-2 rounded-lg font-bold text-xs transition-all bg-amber-500 text-slate-900 shadow";
-                btnL2.className = "px-5 py-2 rounded-lg font-bold text-xs transition-all text-slate-400 hover:text-slate-200";
-            } else {
+            } else if (mode === 'L2') {
                 btnL2.className = "px-5 py-2 rounded-lg font-bold text-xs transition-all bg-amber-500 text-slate-900 shadow";
-                btnL3.className = "px-5 py-2 rounded-lg font-bold text-xs transition-all text-slate-400 hover:text-slate-200";
+            } else if (mode === 'Fiesta') {
+                btnFiesta.className = "px-5 py-2 rounded-lg font-bold text-xs transition-all bg-amber-500 text-slate-900 shadow";
             }
             SoundFX.init();
         }
@@ -927,7 +1075,13 @@
             }
             appState.currentTurnIdx = 0;
             const headerLabel = document.getElementById('header-syllabus-label');
-            headerLabel.innerText = appState.syllabusMode === 'L3' ? 'Výukový herní kvíz • Lekce 1 - 3' : 'Výukový herní kvíz • Lekce 1 - 2';
+            if (appState.syllabusMode === 'L3') {
+                headerLabel.innerText = 'Výukový herní kvíz • Lekce 1 - 3';
+            } else if (appState.syllabusMode === 'L2') {
+                headerLabel.innerText = 'Výukový herní kvíz • Lekce 1 - 2';
+            } else if (appState.syllabusMode === 'Fiesta') {
+                headerLabel.innerText = 'Výukový herní kvíz • Režim Fiesta 🎉';
+            }
 
             // Zviditelnit tlačítko bleskového kvízu v záhlaví
             document.getElementById('bonus-shortcut-btn').classList.remove('hidden');
@@ -944,7 +1098,6 @@
             container.innerHTML = '';
             pointValues.forEach(val => {
                 for (let catIdx = 0; catIdx < categories.length; catIdx++) {
-                    // Korekce hodnoty pro zobrazení mřížky v případě 600 vs 650
                     const lookupVal = (catIdx === 2 && val === 600) ? 650 : val;
                     const isAnswered = appState.answeredQuestions[`${catIdx}-${val}`];
                     if (isAnswered) {
@@ -962,13 +1115,6 @@
                     }
                 }
             });
-
-            // Kontrola dohrání hracího pole -> přechod na bonusové kolo
-            const totalQuestions = categories.length * pointValues.length;
-            const answeredCount = Object.keys(appState.answeredQuestions).length;
-            if (answeredCount === totalQuestions && !appState.bonusActive) {
-                setTimeout(startBonusRoundTransition, 1000);
-            }
         }
 
         function setTurn(idx) {
@@ -1015,7 +1161,16 @@
         // --- DETAIL OTÁZKY ---
         function openQuestion(catIdx, val) {
             const lookupVal = (catIdx === 2 && val === 600) ? 650 : val;
-            const currentDataSet = appState.syllabusMode === 'L3' ? gameDataL3 : gameDataL2;
+            
+            let currentDataSet;
+            if (appState.syllabusMode === 'L3') {
+                currentDataSet = gameDataL3;
+            } else if (appState.syllabusMode === 'L2') {
+                currentDataSet = gameDataL2;
+            } else {
+                currentDataSet = gameDataFiesta;
+            }
+            
             const data = currentDataSet[catIdx][lookupVal];
 
             appState.currentQuestion = {
@@ -1243,10 +1398,14 @@
                 rVerbs = ["hablar", "comer", "escribir"];
                 mVerbs = ["ser", "estar", "tener"];
                 hVerbs = ["dormir", "preferir", "querer"];
-            } else {
+            } else if (appState.syllabusMode === 'L2') {
                 rVerbs = ["cantar", "escuchar", "completar"];
                 mVerbs = ["escribir", "leer", "responder"];
                 hVerbs = ["ser", "tener", "llamarse"];
+            } else { // Fiesta
+                rVerbs = ["hablar", "comer", "escribir"];
+                mVerbs = ["ser", "estar", "tener"];
+                hVerbs = ["dormir", "preferir", "querer"];
             }
 
             // Šuflování
@@ -1311,7 +1470,7 @@
                 if (isCurrentTurn && !isEliminated) {
                     cardStyle += ` ring-4 ring-amber-500 border-amber-500 scale-[1.02] active-turn-ring`;
                 } else if (isEliminated) {
-                    cardStyle += ` opacity-30 bg-slate-950 border-slate-955`;
+                    cardStyle += ` opacity-30 bg-slate-955 border-slate-955`;
                 }
 
                 container.innerHTML += `
