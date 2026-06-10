@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Španělská herní show - Nueva Aventura</title>
+    <!-- Tailwind CSS pro rychlý a moderní responzivní design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: "DM Sans", sans-serif;
+            background-color: #0f172a; /* Tmavé stylové pozadí */
+        }
+        h1, h2, h3, .font-serif {
+            font-family: "Merriweather", serif;
+        }
+        /* Efekt stisknutých tlačítek v herní mřížce */
+        .grid-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .grid-btn:not(:disabled):hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.4);
+        }
+        /* Pulzující efekt pro aktivní tým na řadě */
+        .active-turn-ring {
+            animation: pulse-ring 2s infinite;
+        }
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-amber-500 selection:text-slate-900">
+
+    <!-- ZMENŠENÁ HORNÍ LIŠTA -->
+    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 px-4 py-2 flex justify-between items-center z-10 shrink-0">
+        <div class="flex items-center space-x-2.5">
+            <span class="text-2xl">🇪🇸</span>
+            <div>
+                <h1 class="text-base font-bold text-amber-500 tracking-wide leading-tight">¡El Juego de Español!</h1>
+                <p id="header-syllabus-label" class="text-[10px] text-slate-400">Výukový herní kvíz • Lekce 1 - 3</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <!-- Tlačítko Undo -->
+            <button onclick="triggerUndo()" id="undo-btn" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-2.5 py-1 rounded-lg text-xs flex items-center space-x-1.5 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                <span>Zpět (Undo)</span>
+            </button>
+            <!-- Tlačítko Redo -->
+            <button onclick="triggerRedo()" id="redo-btn" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-2.5 py-1 rounded-lg text-xs flex items-center space-x-1.5 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="transform: scaleX(-1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                <span>Vpřed (Redo)</span>
+            </button>
+            <button onclick="confirmReset()" class="bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-250 px-2.5 py-1 rounded-lg text-xs transition-colors">
+                Nová hra
+            </button>
+        </div>
+    </header>
+
+    <!-- Hlavní kontejner pro dynamické načítání obrazovek -->
+    <main class="flex-grow flex items-center justify-center p-4 md:p-6">
+        
+        <!-- 1. OBRAZOVKA: NASTAVENÍ TÝMŮ -->
+        <section id="screen-setup" class="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl transition-all">
+            <div class="text-center mb-6">
+                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full">Příprava hry</span>
+                <h2 class="text-4xl font-bold mt-4 mb-2 text-white">Nastavení soutěžních týmů</h2>
+                <p class="text-slate-400 max-w-lg mx-auto">Vyberte rozsah učiva, počet týmů, přizpůsobte jejich názvy a začněte herní klání ze španělské gramatiky a slovíček.</p>
+            </div>
+
+            <!-- VOLBA ROZSAHU UČIVA -->
+            <div class="flex flex-col items-center mb-6">
+                <span class="text-slate-400 font-medium mb-2.5 text-sm">Rozsah učiva (Syllabus):</span>
+                <div class="inline-flex rounded-xl p-1 bg-slate-950 border border-slate-800">
+                    <button onclick="setSyllabusMode('L3')" id="btn-syllabus-l3" class="px-5 py-2 rounded-lg font-bold text-xs transition-all bg-amber-500 text-slate-900 shadow">
+                        Lekce 1 - 3 (Kompletní)
+                    </button>
+                    <button onclick="setSyllabusMode('L2')" id="btn-syllabus-l2" class="px-5 py-2 rounded-lg font-bold text-xs transition-all text-slate-400 hover:text-slate-200">
+                        Lekce 1 - 2 (Lekce 0, 1 a 2)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Výběr počtu týmů -->
+            <div class="flex justify-center mb-6 space-x-4">
+                <span class="text-slate-400 self-center font-medium mr-2 text-sm">Počet týmů:</span>
+                <button onclick="setTeamCount(2)" id="btn-count-2" class="px-4 py-2 rounded-xl border border-slate-700 hover:border-slate-500 font-bold text-sm transition-all bg-slate-800 text-slate-300">2</button>
+                <button onclick="setTeamCount(3)" id="btn-count-3" class="px-4 py-2 rounded-xl border border-slate-700 hover:border-slate-500 font-bold text-sm transition-all bg-slate-800 text-slate-300">3</button>
+                <button onclick="setTeamCount(4)" id="btn-count-4" class="px-4 py-2 rounded-xl border border-amber-500 font-bold text-sm transition-all bg-amber-500 text-slate-900 ring-4 ring-amber-500/20">4</button>
+            </div>
+
+            <!-- Dynamické vstupy pro týmy -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-8" id="team-inputs-container">
+                <!-- Generováno JS -->
+            </div>
+
+            <div class="text-center">
+                <button onclick="startGame()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xl px-12 py-4 rounded-xl shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    Spustit hru 🚀
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. OBRAZOVKA: HERNÍ POLE -->
+        <section id="screen-board" class="hidden w-full max-w-7xl flex flex-col space-y-6 transition-all animate-fade-in">
+            <!-- Rychlý náhled průběžného stavu - NADE VŠEMI OTÁZKAMI -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="board-scoreboard">
+                <!-- JS generované vizitky týmů s indikátory tahu -->
+            </div>
+
+            <!-- Samotná Jeopardy mřížka -->
+            <div class="grid grid-cols-5 gap-3 md:gap-4 bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-2xl shadow-xl overflow-x-auto">
+                <!-- Kategorie (Záhlaví) -->
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold text-amber-400 text-sm md:text-base shadow-inner">Slovíčka</div>
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold text-amber-400 text-sm md:text-base shadow-inner">Slovesa</div>
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold text-amber-400 text-sm md:text-base shadow-inner">Gramatika</div>
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold text-amber-400 text-sm md:text-base shadow-inner">Fráze</div>
+                <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold text-amber-400 text-sm md:text-base shadow-inner">Trivia</div>
+
+                <!-- Tlačítka s hodnotami budou vygenerována skriptem -->
+                <div id="jeopardy-buttons" class="contents">
+                    <!-- JS generovaný obsah -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. OBRAZOVKA: ZMENŠENÝ DETAIL OTÁZKY -->
+        <section id="screen-question" class="hidden w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-2xl flex flex-col justify-between transition-all">
+            <!-- Hlavička otázky - ZMENŠENÁ -->
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-4">
+                <div>
+                    <span id="q-category-tag" class="text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2.5 py-0.5 rounded-full">Kategorie</span>
+                    <h2 id="q-val-title" class="text-lg font-bold text-white mt-1">Otázka za 200 bodů</h2>
+                </div>
+            </div>
+
+            <!-- Tělo otázky a nápověda -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 my-2">
+                <div class="md:col-span-8 flex flex-col justify-between space-y-4">
+                    <div class="space-y-2">
+                        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Zadání:</p>
+                        <h3 id="q-prompt-text" class="text-2xl font-bold text-white leading-relaxed font-serif">Jak se španělsky řekne...</h3>
+                    </div>
+
+                    <!-- Nápověda s mechanikou penalizace -->
+                    <div class="bg-slate-850 border border-slate-800 rounded-xl p-3.5">
+                        <button onclick="activateHint()" id="hint-trigger-btn" class="text-xs text-slate-400 hover:text-white flex items-center space-x-1 transition-colors">
+                            <span id="hint-icon">💡</span>
+                            <span class="underline font-bold">Zobrazit nápovědu (Sníží možnou výhru o 50%!)</span>
+                        </button>
+                        <p id="q-hint-text" class="hidden text-sm text-amber-300/90 mt-2 italic pl-4 border-l-2 border-amber-500/50">Nápověda...</p>
+                        <div id="hint-warning-tag" class="hidden text-[10px] font-bold text-red-400 mt-2 uppercase tracking-wider flex items-center space-x-1">
+                            <span>⚠️ Použita nápověda! Výhra i penalizace jsou poloviční.</span>
+                        </div>
+                    </div>
+
+                    <!-- Skrytá odpověď -->
+                    <div id="q-answer-container" class="hidden bg-emerald-950/20 border border-emerald-800/30 rounded-xl p-4 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-emerald-500/10 text-emerald-400 text-[9px] uppercase tracking-widest font-bold px-2.5 py-0.5 rounded-bl-lg border-l border-b border-emerald-800/30">Správné řešení</div>
+                        <p class="text-2xs text-slate-400 uppercase tracking-widest font-bold mb-0.5">Španělský překlad / Odpověď:</p>
+                        <p id="q-answer-text" class="text-xl font-bold text-emerald-400 font-serif">¡Excelente!</p>
+                    </div>
+                </div>
+
+                <!-- Boční panel: Přidělování bodů a správa stavu -->
+                <div class="md:col-span-4 bg-slate-850 border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-4">
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Vyhodnotit tým:</h4>
+                        <!-- Výběr týmu, který zrovna odpovídá -->
+                        <div class="space-y-1.5" id="scoring-team-list">
+                            <!-- JS vygeneruje rádio tlačítka s týmy -->
+                        </div>
+                    </div>
+
+                    <!-- Ovládací tlačítka vyhodnocení -->
+                    <div class="space-y-2 pt-3 border-t border-slate-800">
+                        <button onclick="revealAnswer()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg transition-colors text-xs">
+                            👁️ Ukázat odpověď
+                        </button>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="applyScore(true)" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-2.5 px-3 rounded-lg flex flex-col items-center justify-center transition-colors shadow-lg shadow-emerald-600/10">
+                                <span class="text-[10px] uppercase tracking-wider text-slate-900 opacity-85 leading-none">Správně</span>
+                                <span class="text-base font-extrabold mt-0.5" id="score-plus-label">+200</span>
+                            </button>
+                            <button onclick="applyScore(false)" class="bg-red-600 hover:bg-red-500 text-slate-100 font-bold py-2.5 px-3 rounded-lg flex flex-col items-center justify-center transition-colors shadow-lg shadow-red-600/10">
+                                <span class="text-[10px] uppercase tracking-wider text-slate-205 opacity-85 leading-none">Špatně</span>
+                                <span class="text-base font-extrabold mt-0.5" id="score-minus-label">-100</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spodní návratové tlačítko -->
+            <div class="border-t border-slate-800 pt-3 mt-4 flex justify-between items-center">
+                <button onclick="returnToBoard()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold py-2 px-4 rounded-lg transition-colors text-xs flex items-center space-x-2">
+                    <span>⬅️ Uložit a zpět na herní pole</span>
+                </button>
+                <p class="text-[10px] text-slate-500">Můžete udělit body i více týmům postupně (při krádeži bodů).</p>
+            </div>
+        </section>
+
+        <!-- 4. OBRAZOVKA: KONEC HRY / STUPNĚ VÍTĚZŮ -->
+        <section id="screen-results" class="hidden w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center relative overflow-hidden transition-all">
+            <!-- Canvas pro konfety -->
+            <canvas id="confetti-canvas" class="absolute inset-0 pointer-events-none z-0"></canvas>
+
+            <div class="relative z-10">
+                <span class="text-5xl">🏆</span>
+                <h2 class="text-5xl font-bold my-4 text-white">Finální výsledky hry</h2>
+                <p class="text-slate-400 mb-8 max-w-lg mx-auto">Všem týmům děkujeme za účast. Zde jsou celkové výsledky dnešního španělského klání.</p>
+
+                <!-- Stupně vítězů -->
+                <div class="flex flex-col md:flex-row justify-center items-end space-y-6 md:space-y-0 md:space-x-4 mb-12" id="podium-container">
+                    <!-- JS vygeneruje stupně vítězů dynamicky dle výsledků -->
+                </div>
+
+                <div class="flex justify-center space-x-4">
+                    <button onclick="confirmReset()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-8 py-3.5 rounded-xl shadow-lg transition-all">
+                        Hrát znovu 🔄
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Dialog / Modální okno pro reset hry -->
+    <div id="modal-confirm" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <h3 class="text-xl font-bold text-white mb-2">Opravdu restartovat hru?</h3>
+            <p class="text-slate-400 text-sm mb-6">Veškeré aktuální skóre, nastavení týmů a stav odehraných otázek budou trvale smazány.</p>
+            <div class="flex space-x-3 justify-end">
+                <button onclick="closeConfirmModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Zrušit</button>
+                <button onclick="resetGame()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Ano, restartovat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Uživatelsky přívětivá chybová/notifikační zpráva (nahrazuje alert) -->
+    <div id="custom-toast" class="fixed bottom-6 right-6 bg-slate-850 border border-amber-500/30 text-amber-300 px-5 py-3.5 rounded-xl shadow-2xl translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-3 z-50 pointer-events-none">
+        <span class="text-lg">📢</span>
+        <span id="toast-text" class="text-sm font-medium">Zpráva...</span>
+    </div>
+
+    <!-- Spodní lišta se stavem a autorskými právy -->
+    <footer class="bg-slate-950/60 border-t border-slate-900 py-3 px-6 text-center text-xs text-slate-500">
+        © 2026 ¡El Juego de Español! • Vyvinuto na motivy učebnice Klett Nueva Aventura 1
+    </footer>
+
+    <script>
+        // --- DATASET 1: LEKCE 1 - 3 (Původní kompletní rozsah) ---
+        const gameDataL3 = {
+            0: { // Slovíčka
+                200: { 
+                    q: "Jak se španělsky řekne „batoh“?", 
+                    a: "la mochila", 
+                    hint: "Slovo má ženský člen (la) a začíná na písmeno 'm'." 
+                },
+                400: { 
+                    q: "Které dvě barvy vyjadřují španělské výrazy „amarillo“ a „marrón“?", 
+                    a: "žlutá a hnědá", 
+                    hint: "Vzpomeňte si na podzimní listí. Jedna barva je jako slunce, druhá jako kůra stromu." 
+                },
+                600: { 
+                    q: "Přeložte do španělštiny výraz „zahraničí“.", 
+                    a: "el extranjero", 
+                    hint: "Začíná na samohlásku 'e' s mužským členem (el)." 
+                },
+                800: { 
+                    q: "Jak se španělsky vyjádří výraz „chalupa“ nebo „dům na venkově“?", 
+                    a: "la casa de campo", 
+                    hint: "Doslova se to překládá jako 'dům z pole'." 
+                },
+                1000: { 
+                    q: "Přeložte do španělštiny spojení „úchvatná památka“.", 
+                    a: "un monumento impresionante", 
+                    hint: "Podstatné jméno 'monumento' je mužského rodu, přídavné jméno 'impresionante' je nesklonné." 
+                }
+            },
+            1: { // Slovesa
+                200: { 
+                    q: "Pojmenujte španělské infinitivy pro slovesa: „jíst“, „pít“ a „večeřet“.", 
+                    a: "comer, beber, cenar", 
+                    hint: "První dvě končí na '-er', třetí na '-ar'." 
+                },
+                400: { 
+                    q: "Vyjádřete španělsky tvar „my studujeme / učíme se“ (infinitiv: estudiar).", 
+                    a: "estudiamos", 
+                    hint: "Koncovka první osoby množného čísla pro slovesa typu '-ar' je '-amos'." 
+                },
+                600: { 
+                    q: "Přeložte dvojici tvarů nepravidelných sloves: „já mám“ a „on je“ (totožnost).", 
+                    a: "tengo, (él) es", 
+                    hint: "První je od slovesa 'tener' a druhé od slovesa 'ser'." 
+                },
+                800: { 
+                    q: "Přeložte tvary: „on chce“ a „on dává přednost“ (infinitivy: querer, preferir).", 
+                    a: "él quiere, él prefiere", 
+                    hint: "Obě slovesa jsou kmenová s měkčením samohlásky e -> ie." 
+                },
+                1000: { 
+                    q: "Přeložte celou větu ze 3. lekce: „Vstávám pozdě, protože chodím pozdě spát.“", 
+                    a: "Me levanto tarde porque me acuesto tarde.", 
+                    hint: "Využijte zvratná slovesa 'levantarse' a 'acostarse' (změna o -> ue)." 
+                }
+            },
+            2: { // Gramatika
+                200: { 
+                    q: "Vyjádřete španělsky všechny tvary určitého členu jednotného i množného čísla (ten, ta, ti, ty).", 
+                    a: "el, la, los, las", 
+                    hint: "Začněte mužským jednotným a skončete ženským množným." 
+                },
+                400: { 
+                    q: "Který jednoslabičný tvar vyjadřuje existenci (české „je tam / jsou tam“ nebo „nachází se“)?", 
+                    a: "hay", 
+                    hint: "Vychází z infinitivu pomocného slovesa 'haber'." 
+                },
+                650: { // 600b row mapping key
+                    q: "Jak se španělsky řekne neutrální ukazovací zájmeno „toto / tohle“?", 
+                    a: "esto", 
+                    hint: "Pozor, neplést s tvary mužského či ženského rodu. Končí na písmeno 'o'." 
+                },
+                800: { 
+                    q: "Jakou gramatickou strukturou vyjádříte porovnání „tak ... jako“ (např. tak slavná jako...)?", 
+                    a: "tan ... como", 
+                    hint: "První slovo začíná na 't' a druhé na 'c'." 
+                },
+                1000: { 
+                    q: "Jak vzniká stažený člen „al“ a co přesně vyjadřuje?", 
+                    a: "spojením předložky „a“ a členu „el“ (směr „do / k“)", 
+                    hint: "V češtině vyjadřuje směr k podstatnému jménu mužského rodu (např. al bar)." 
+                }
+            },
+            3: { // Fráze
+                200: { 
+                    q: "Jak pozdravíte španělsky někoho dopoledne / ráno?", 
+                    a: "¡Buenos días!", 
+                    hint: "Slovo 'día' je sice zakončeno na -a, ale je mužského rodu!" 
+                },
+                400: { 
+                    q: "Jak se španělsky zeptáte kamaráda „Jak se máš?“", 
+                    a: "¿Qué tal? (nebo ¿Cómo estás?)", 
+                    hint: "Velmi běžná krátká dvouslovná fráze z 1. lekce." 
+                },
+                600: { 
+                    q: "Jak se španělsky hlásíte do telefonu, když zvednete hovor (ekvivalent českého „Prosím?“)?", 
+                    a: "¿Diga? / ¿Dígame?", 
+                    hint: "Jedná se o rozkazovací tvar slovesa 'decir' (říkat)." 
+                },
+                800: { 
+                    q: "Jakým spojením vyjádříte v rozhovoru názor „Myslím si, že...“?", 
+                    a: "Creo que...", 
+                    hint: "Sloveso 'creer' (věřit/myslet si) v první osobě s uvozovací spojkou." 
+                },
+                1000: { 
+                    q: "Přeložte celou frázi ze 2. lekce: „Učím se španělsky, abych mohl/a cestovat.“", 
+                    a: "Estudio español para viajar.", 
+                    hint: "Účel vyjádříte předložkou 'para' spojenou s infinitivem slovesa cestovat." 
+                }
+            },
+            4: { // Trivia
+                200: { 
+                    q: "Jak se správně španělsky píše název země „Německo“?", 
+                    a: "Alemania", 
+                    hint: "Pozor na první velké písmeno a koncovku typickou pro země." 
+                },
+                400: { 
+                    q: "Jaká je oficiální měna („moneda“) Španělska?", 
+                    a: "euro", 
+                    hint: "Je to stejná měna jako v sousedním Německu nebo Francii." 
+                },
+                600: { 
+                    q: "Přeložte do španělštiny dvojici společenských titulů: „král“ a „prezident“.", 
+                    a: "el rey, el presidente", 
+                    hint: "Král začíná na 'r' a prezident se píše téměř stejně jako v češtině." 
+                },
+                800: { 
+                    q: "Uveďte španělsky národnosti pro muže i ženy: Čech, Češka, Španěl, Španělka.", 
+                    a: "checo, checa, español, española", 
+                    hint: "Nezapomeňte na správné přechylování koncovek podle rodu." 
+                },
+                1000: { 
+                    q: "Přeložte celou větu: „Řím je starobylé a velmi romantické město.“", 
+                    a: "Roma es una ciudad antigua y muy romántica.", 
+                    hint: "Pozor, podstatné jméno 'ciudad' je ženského rodu, což ovlivňuje člen i koncovky přídavných jmen." 
+                }
+            }
+        };
+
+        // --- DATASET 2: LEKCE 1 - 2 (Lekce 0, 1 a 2 - Bez Lekce 3) ---
+        const gameDataL2 = {
+            0: { // Slovíčka
+                200: { 
+                    q: "Jak se španělsky řekne „batoh“?", 
+                    a: "la mochila", 
+                    hint: "Slovo má ženský člen (la) a začíná na písmeno 'm'." 
+                },
+                400: { 
+                    q: "Které dvě barvy vyjadřují španělské výrazy „amarillo“ a „marrón“?", 
+                    a: "žlutá a hnědá", 
+                    hint: "Kombinace barev podzimního listí nebo slunce a stromové kůry." 
+                },
+                600: { 
+                    q: "Jak se španělsky řekne „spolužák / spolužačka“?", 
+                    a: "el compañero / la compañera", 
+                    hint: "Pojem z 1. lekce, má společný kmen s vlnovkou nad 'n' (ñ)." 
+                },
+                800: { 
+                    q: "Jak se španělsky řekne „odpadkový koš“ a „penál“?", 
+                    a: "la papelera, el estuche", 
+                    hint: "Dva nepostradatelné školní předměty z 2. lekce." 
+                },
+                1000: { 
+                    q: "Přeložte do španělštiny spojení: „nový počítač a žlutá fixa“.", 
+                    a: "un ordenador nuevo y un rotulador amarillo", 
+                    hint: "Pozor na členy, správné pozice přídavných jmen a shodu rodu." 
+                }
+            },
+            1: { // Slovesa
+                200: { 
+                    q: "Pojmenujte španělské infinitivy pro slovesa: „jmenovat se“ a „studovat / učit se“.", 
+                    a: "llamarse, estudiar", 
+                    hint: "První sloveso je zvratné (končí na -se), druhé končí na -ar." 
+                },
+                400: { 
+                    q: "Vyjádřete španělsky tvary: „my zpíváme“ (cantar) a „oni píší“ (escribir).", 
+                    a: "cantamos, escriben", 
+                    hint: "Pravidelné časování sloves ze 2. lekce." 
+                },
+                600: { 
+                    q: "Přeložte dvojici tvarů nepravidelných sloves: „já mám“ a „on je“ (totožnost).", 
+                    a: "tengo, (él) es", 
+                    hint: "Velmi důležité nepravidelné základy ze začátku učebnice (tener, ser)." 
+                },
+                800: { 
+                    q: "Vyčasujte sloveso „mít“ (tener) pro všechny osoby jednotného čísla (já, ty, on/ona).", 
+                    a: "tengo, tienes, tiene", 
+                    hint: "Sloveso mění kmen v 2. a 3. osobě jednotného čísla (e -> ie)." 
+                },
+                1000: { 
+                    q: "Přeložte celou větu: „Někdy posloucháme hudbu a čteme zajímavou knihu.“", 
+                    a: "A veces escuchamos música y leemos un libro interesante.", 
+                    hint: "Spojuje příslovce času a pravidelná slovesa 2. lekce." 
+                }
+            },
+            2: { // Gramatika
+                200: { 
+                    q: "Vyjádřete španělsky všechny tvary určitého členu jednotného i množného čísla (ten, ta, ti, ty).", 
+                    a: "el, la, los, las", 
+                    hint: "Základní gramatický prvek pro rod mužský a ženský." 
+                },
+                400: { 
+                    q: "Který jednoslabičný tvar vyjadřuje existenci (české „je tam / jsou tam“ nebo „nachází se“)?", 
+                    a: "hay", 
+                    hint: "Bezosobní tvar spojený se slovesem haber." 
+                },
+                650: { // 600b row mapping key
+                    q: "Jak se španělsky řekne neutrální ukazovací zájmeno „toto / tohle“?", 
+                    a: "esto", 
+                    hint: "Ukazovací zájmeno pro neurčené věci bez specifikace rodu." 
+                },
+                800: { 
+                    q: "Přeložte spojení: „mnoho knih“ (mužský rod) a „mnoho stolů“ (ženský rod).", 
+                    a: "muchos libros, muchas mesas", 
+                    hint: "Zájmeno 'mucho' se musí gramaticky shodovat v rodě a čísle s podstatným jménem." 
+                },
+                1000: { 
+                    q: "Přeložte spojení ukazovacích zájmen: „tento batoh a tyto propisky“.", 
+                    a: "esta mochila y estos bolígrafos", 
+                    hint: "Dbejte na shodu ukazovacích zájmen s rodem podstatných jmen (mochila = ž. r., bolígrafo = m. r.)." 
+                }
+            },
+            3: { // Fráze
+                200: { 
+                    q: "Jak pozdravíte španělsky někoho dopoledne / ráno?", 
+                    a: "¡Buenos días!", 
+                    hint: "Základní španělský ranní pozdrav z 1. lekce." 
+                },
+                400: { 
+                    q: "Jak se španělsky zeptáte kamaráda „Jak se máš?“", 
+                    a: "¿Qué tal? (nebo ¿Cómo estás?)", 
+                    hint: "Nejpoužívanější neformální otázka při setkání." 
+                },
+                600: { 
+                    q: "Jak španělsky řeknete: „Promiň, nerozumím. Můžete to zopakovat?“", 
+                    a: "Perdón, no entiendo. ¿Puede repetir?", 
+                    hint: "Velmi užitečná komunikační fráze, kombinuje omluvu a prosbu o zopakování." 
+                },
+                800: { 
+                    q: "Přeložte dialog z 1. lekce: „Mluvíš španělsky? Ano, trochu.“", 
+                    a: "¿Hablas español? Sí, un poco.", 
+                    hint: "Základní konverzace o jazykových schopnostech." 
+                },
+                1000: { 
+                    q: "Přeložte celou frázi ze 2. lekce: „Učím se španělsky, abych mohl/a cestovat.“", 
+                    a: "Estudio español para viajar.", 
+                    hint: "Vyjádření účelu pomocí předložky 'para' následované infinitivem." 
+                }
+            },
+            4: { // Trivia
+                200: { 
+                    q: "Jak se správně španělsky píše název země „Německo“?", 
+                    a: "Alemania", 
+                    hint: "Evropská země začínající na velké písmeno 'A'." 
+                },
+                400: { 
+                    q: "Jaká je oficiální měna („moneda“) Španělska?", 
+                    a: "euro", 
+                    hint: "Měnová jednotka společná pro většinu zemí EU." 
+                },
+                600: { 
+                    q: "Přeložte do španělštiny dvojici společenských titulů: „král“ a „prezident“.", 
+                    a: "el rey, el presidente", 
+                    hint: "Hlavy států španělsky, oboje s mužským členem." 
+                },
+                800: { 
+                    q: "Uveďte španělsky národnosti pro muže i ženy: Čech, Češka, Španěl, Španělka.", 
+                    a: "checo, checa, español, española", 
+                    hint: "Národnosti z první lekce Nueva Aventura." 
+                },
+                1000: { 
+                    q: "Přeložte celou větu ze 2. lekce: „Učím se španělsky, protože španělština je hezká.“", 
+                    a: "Estudio español porque es bonito.", 
+                    hint: "Vyjádření důvodu pomocí spojky 'porque' (protože)." 
+                }
+            }
+        };
+
+        const categories = ["Slovíčka", "Slovesa", "Gramatika", "Fráze", "Trivia"];
+        const pointValues = [200, 400, 600, 800, 1000];
+
+        // --- STAV APLIKACE ---
+        let appState = {
+            teams: [],
+            numTeams: 4,
+            syllabusMode: "L3",    // "L3" pro Lekce 1-3, "L2" pro Lekce 1-2
+            currentQuestion: null, // { catIdx, val, data, hintUsed }
+            answeredQuestions: {}, // Formát "catIdx-val": true
+            currentTurnIdx: 0,     // Index týmu, který je aktuálně na řadě s výběrem
+            history: [],           // Zásobník pro historii akcí (Undo)
+            redoHistory: []        // Zásobník pro kroky vpřed (Redo)
+        };
+
+        // --- WEBOVÝ SYNTEZÁTOR ZVUKŮ (Web Audio API) ---
+        const SoundFX = {
+            ctx: null,
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+
+            playCorrect() {
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(880.00, now + 0.15); // A5
+                
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            },
+
+            playWrong() {
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150.00, now);
+                osc.frequency.linearRampToValueAtTime(100.00, now + 0.25);
+                
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            },
+
+            playChime() {
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.setValueAtTime(698.46, now + 0.1); // F5
+                osc.frequency.setValueAtTime(880.00, now + 0.2); // A5
+                
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.45);
+            }
+        };
+
+        // --- INICIALIZACE A SPUŠTĚNÍ HRY ---
+        window.addEventListener('DOMContentLoaded', () => {
+            renderTeamInputs();
+            updateUndoRedoButtons();
+        });
+
+        // Nastavení režimu učiva
+        function setSyllabusMode(mode) {
+            appState.syllabusMode = mode;
+            const btnL3 = document.getElementById('btn-syllabus-l3');
+            const btnL2 = document.getElementById('btn-syllabus-l2');
+
+            if (mode === 'L3') {
+                btnL3.className = "px-5 py-2 rounded-lg font-bold text-xs transition-all bg-amber-500 text-slate-900 shadow";
+                btnL2.className = "px-5 py-2 rounded-lg font-bold text-xs transition-all text-slate-400 hover:text-slate-200";
+            } else {
+                btnL2.className = "px-5 py-2 rounded-lg font-bold text-xs transition-all bg-amber-500 text-slate-900 shadow";
+                btnL3.className = "px-5 py-2 rounded-lg font-bold text-xs transition-all text-slate-400 hover:text-slate-200";
+            }
+            SoundFX.init();
+        }
+
+        // Nastavení počtu týmů na úvodní obrazovce
+        function setTeamCount(count) {
+            appState.numTeams = count;
+            
+            // Stylizace tlačítek výběru počtu
+            [2, 3, 4].forEach(c => {
+                const btn = document.getElementById(`btn-count-${c}`);
+                if (c === count) {
+                    btn.className = "px-4 py-2 rounded-xl border border-amber-500 font-bold text-sm transition-all bg-amber-500 text-slate-900 ring-4 ring-amber-500/20";
+                } else {
+                    btn.className = "px-4 py-2 rounded-xl border border-slate-700 hover:border-slate-500 font-bold text-sm transition-all bg-slate-800 text-slate-300";
+                }
+            });
+
+            renderTeamInputs();
+        }
+
+        // Generování formulářů pro pojmenování týmů
+        function renderTeamInputs() {
+            const container = document.getElementById('team-inputs-container');
+            container.innerHTML = '';
+            
+            const defaultNames = ["Tým Červení", "Tým Žlutí", "Tým Zelení", "Tým Modří"];
+            const accentColors = [
+                "border-l-4 border-red-500",
+                "border-l-4 border-amber-500",
+                "border-l-4 border-emerald-500",
+                "border-l-4 border-blue-500"
+            ];
+
+            for (let i = 0; i < appState.numTeams; i++) {
+                container.innerHTML += `
+                    <div class="bg-slate-850 p-4 rounded-xl border border-slate-800 ${accentColors[i]} flex flex-col space-y-2">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Název týmu ${i + 1}:</label>
+                        <input type="text" id="input-team-name-${i}" value="${defaultNames[i]}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-semibold focus:outline-none focus:border-amber-500 transition-colors">
+                    </div>
+                `;
+            }
+        }
+
+        // Spuštění samotné hry
+        function startGame() {
+            // Uložení jmen týmů
+            appState.teams = [];
+            for (let i = 0; i < appState.numTeams; i++) {
+                const nameInput = document.getElementById(`input-team-name-${i}`);
+                appState.teams.push({
+                    id: i,
+                    name: nameInput.value.trim() || `Tým ${i + 1}`,
+                    score: 0
+                });
+            }
+
+            // Nastavení začínajícího tahu a zobrazení záhlaví
+            appState.currentTurnIdx = 0;
+            const headerLabel = document.getElementById('header-syllabus-label');
+            headerLabel.innerText = appState.syllabusMode === 'L3' ? 'Výukový herní kvíz • Lekce 1 - 3' : 'Výukový herní kvíz • Lekce 1 - 2';
+
+            // Přechod na herní pole
+            showScreen('screen-board');
+            renderBoard();
+            renderBoardScoreboard();
+            SoundFX.playChime();
+        }
+
+        // --- GENERUJE A SPRAVUJE HERNÍ POLE ---
+        function renderBoard() {
+            const container = document.getElementById('jeopardy-buttons');
+            container.innerHTML = '';
+
+            // Generujeme hodnoty pro každou kategorii řádek po řádku
+            pointValues.forEach(val => {
+                for (let catIdx = 0; catIdx < categories.length; catIdx++) {
+                    const isAnswered = appState.answeredQuestions[`${catIdx}-${val}`];
+                    
+                    if (isAnswered) {
+                        container.innerHTML += `
+                            <button disabled class="bg-slate-950 border border-slate-900 text-slate-700 font-bold py-6 rounded-xl flex items-center justify-center text-xl cursor-default transition-all">
+                                ✓
+                            </button>
+                        `;
+                    } else {
+                        container.innerHTML += `
+                            <button onclick="openQuestion(${catIdx}, ${val})" class="grid-btn bg-slate-800 border border-slate-750 hover:bg-slate-700/85 hover:border-amber-500 text-amber-400 font-bold py-6 rounded-xl flex items-center justify-center text-xl md:text-2xl shadow-md">
+                                ${val}
+                            </button>
+                        `;
+                    }
+                }
+            });
+
+            // Kontrola konce hry
+            const totalQuestions = categories.length * pointValues.length;
+            const answeredCount = Object.keys(appState.answeredQuestions).length;
+            if (answeredCount === totalQuestions) {
+                setTimeout(endGame, 1000);
+            }
+        }
+
+        // Ruční nastavení tahu kliknutím na kartu na herním poli
+        function setTurn(idx) {
+            appState.currentTurnIdx = idx;
+            renderBoardScoreboard();
+            SoundFX.playChime();
+            showToast(`👉 Výběr otázky byl ručně přiřazen týmu: <strong>${appState.teams[idx].name}</strong>.`);
+        }
+
+        // Aktualizace karet týmů (S indikátorem aktivního tahu)
+        function renderBoardScoreboard() {
+            const container = document.getElementById('board-scoreboard');
+            container.innerHTML = '';
+
+            const teamColors = [
+                "border-red-500/30 bg-red-950/10 hover:bg-red-950/20",
+                "border-amber-500/30 bg-amber-950/10 hover:bg-amber-950/20",
+                "border-emerald-500/30 bg-emerald-950/10 hover:bg-emerald-950/20",
+                "border-blue-500/30 bg-blue-950/10 hover:bg-blue-950/20"
+            ];
+
+            const textColors = ["text-red-400", "text-amber-400", "text-emerald-400", "text-blue-400"];
+
+            appState.teams.forEach((team, idx) => {
+                const isCurrentTurn = (idx === appState.currentTurnIdx);
+                
+                // Určení stylu podle toho, zda je tým na řadě
+                let cardStyle = `bg-slate-900 border ${teamColors[idx]} p-5 rounded-2xl flex flex-col justify-between items-center shadow-lg transition-all cursor-pointer relative overflow-hidden`;
+                if (isCurrentTurn) {
+                    cardStyle += ` ring-4 ring-amber-500/30 border-amber-500 active-turn-ring scale-[1.02]`;
+                } else {
+                    cardStyle += ` hover:scale-[1.01] border-slate-800`;
+                }
+
+                container.innerHTML += `
+                    <div onclick="setTurn(${idx})" class="${cardStyle}">
+                        ${isCurrentTurn ? `
+                            <span class="absolute top-0 right-0 bg-amber-500 text-slate-950 text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-bl-lg shadow flex items-center">
+                                ⭐ Na řadě
+                            </span>
+                        ` : ''}
+                        <span class="text-xs uppercase tracking-widest font-bold text-slate-400 mt-1">${team.name}</span>
+                        <span class="text-3xl md:text-4xl font-extrabold mt-2 ${textColors[idx]}">${team.score} b</span>
+                    </div>
+                `;
+            });
+        }
+
+        // --- DETAIL OTÁZKY ---
+        function openQuestion(catIdx, val) {
+            // Korekce hodnoty pro třetí kategorii 600b/650b
+            const lookupVal = (catIdx === 2 && val === 600) ? 650 : val;
+            
+            // Volba aktivního datasetu podle nastavení
+            const currentDataSet = appState.syllabusMode === 'L3' ? gameDataL3 : gameDataL2;
+            const data = currentDataSet[catIdx][lookupVal];
+
+            appState.currentQuestion = {
+                catIdx: catIdx,
+                val: val,
+                data: data,
+                hintUsed: false // Reset nápovědy pro novou otázku
+            };
+
+            // Nastavení textů v šabloně detailu
+            document.getElementById('q-category-tag').innerText = categories[catIdx];
+            document.getElementById('q-val-title').innerText = `Otázka za ${val} bodů`;
+            document.getElementById('q-prompt-text').innerText = data.q;
+            document.getElementById('q-hint-text').innerText = data.hint;
+            document.getElementById('q-answer-text').innerText = data.a;
+
+            // Skrytí nápovědy a odpovědi před spuštěním hodnocení
+            document.getElementById('q-hint-text').classList.add('hidden');
+            document.getElementById('hint-warning-tag').classList.add('hidden');
+            document.getElementById('q-answer-container').classList.add('hidden');
+            
+            // Obnova nápovědového tlačítka do výchozího stavu
+            const hintBtn = document.getElementById('hint-trigger-btn');
+            hintBtn.classList.remove('pointer-events-none', 'opacity-50');
+
+            // Nastavení standardních popisků u bodovacích tlačítek (+Value / -Value/2)
+            document.getElementById('score-plus-label').innerText = `+${val}`;
+            document.getElementById('score-minus-label').innerText = `-${val / 2}`;
+
+            // Generování radiového seznamu týmů (Předvybíráme aktivní tým, který je na tahu)
+            const teamListContainer = document.getElementById('scoring-team-list');
+            teamListContainer.innerHTML = '';
+            appState.teams.forEach((team, idx) => {
+                const isSelected = (idx === appState.currentTurnIdx);
+                teamListContainer.innerHTML += `
+                    <label class="flex items-center space-x-3 bg-slate-900/60 hover:bg-slate-800 border ${isSelected ? 'border-amber-500/60 bg-slate-800' : 'border-slate-800'} rounded-xl px-3 py-2 cursor-pointer transition-colors">
+                        <input type="radio" name="scoring-team-radio" value="${idx}" ${isSelected ? 'checked' : ''} class="accent-amber-500 h-4 w-4">
+                        <div class="flex-grow flex justify-between items-center">
+                            <span class="font-semibold text-slate-200 text-xs">
+                                ${team.name} ${isSelected ? '<span class="text-amber-400 text-[10px] ml-1 font-bold">(na tahu)</span>' : ''}
+                            </span>
+                            <span class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700">${team.score} b</span>
+                        </div>
+                    </label>
+                `;
+            });
+
+            showScreen('screen-question');
+            SoundFX.playChime();
+        }
+
+        // Aktivace nápovědy se stržením poloviny bodů
+        function activateHint() {
+            if (appState.currentQuestion.hintUsed) return;
+
+            appState.currentQuestion.hintUsed = true;
+            
+            // Zobrazení prvků nápovědy a varování
+            document.getElementById('q-hint-text').classList.remove('hidden');
+            document.getElementById('hint-warning-tag').classList.remove('hidden');
+            
+            // Deaktivace nápovědového tlačítka
+            const hintBtn = document.getElementById('hint-trigger-btn');
+            hintBtn.classList.add('pointer-events-none', 'opacity-50');
+
+            // Přepočet a vizualizace nových hodnot hodnocení (Sníženo na 50%)
+            const originalVal = appState.currentQuestion.val;
+            const newWinnable = originalVal / 2;
+            const newPenalty = originalVal / 4;
+
+            document.getElementById('score-plus-label').innerText = `+${newWinnable}`;
+            document.getElementById('score-minus-label').innerText = `-${newPenalty}`;
+
+            SoundFX.playWrong(); // Výstražný tón
+            showToast("💡 Nápověda zobrazena. Výhra i penalizace byly sníženy na 50 %!");
+        }
+
+        // Odhalení správného řešení
+        function revealAnswer() {
+            document.getElementById('q-answer-container').classList.remove('hidden');
+            SoundFX.playChime();
+        }
+
+        // Připsání či odečtení bodů vybranému týmu
+        function applyScore(isCorrect) {
+            const selectedRadio = document.querySelector('input[name="scoring-team-radio"]:checked');
+            if (!selectedRadio) {
+                showToast("⚠️ Prosím, zvolte nejdříve tým pro přiřazení bodů.");
+                return;
+            }
+
+            const teamIdx = parseInt(selectedRadio.value);
+            const team = appState.teams[teamIdx];
+            const originalVal = appState.currentQuestion.val;
+            
+            // Pokud byla použita nápověda, body se krátí na polovinu
+            const calculatedVal = appState.currentQuestion.hintUsed ? (originalVal / 2) : originalVal;
+            const pointChange = isCorrect ? calculatedVal : -(calculatedVal / 2);
+            
+            // Zápis do historie pro případné Undo
+            appState.history.push({
+                teamId: team.id,
+                pointChange: pointChange,
+                questionKey: `${appState.currentQuestion.catIdx}-${originalVal}`,
+                hintUsed: appState.currentQuestion.hintUsed
+            });
+            
+            // Nová akce vymaže redo zásobník
+            appState.redoHistory = [];
+            updateUndoRedoButtons();
+
+            // Úprava reálného skóre
+            team.score += pointChange;
+
+            // Zpětná vazba pro uživatele
+            if (isCorrect) {
+                SoundFX.playCorrect();
+                showToast(`✅ Tým <strong>${team.name}</strong> získává <strong>+${calculatedVal}</strong> bodů.`);
+            } else {
+                SoundFX.playWrong();
+                showToast(`❌ Tým <strong>${team.name}</strong> ztrácí <strong>${Math.abs(pointChange)}</strong> bodů.`);
+            }
+
+            // Uzamknutí otázky na herním poli (byla alespoň jednou zodpovězena)
+            appState.answeredQuestions[`${appState.currentQuestion.catIdx}-${originalVal}`] = true;
+
+            // Okamžité přerenderování stavu u výběru týmů na aktuální stránce
+            openQuestion(appState.currentQuestion.catIdx, originalVal);
+            
+            // Pokud byla použita nápověda, musíme ji v přerenderovaném stavu nechat aktivovanou
+            if (appState.currentQuestion.hintUsed) {
+                document.getElementById('q-hint-text').classList.remove('hidden');
+                document.getElementById('hint-warning-tag').classList.remove('hidden');
+                document.getElementById('hint-trigger-btn').classList.add('pointer-events-none', 'opacity-50');
+                document.getElementById('score-plus-label').innerText = `+${calculatedVal}`;
+                document.getElementById('score-minus-label').innerText = `-${Math.abs(pointChange)}`;
+            }
+        }
+
+        // Návrat z detailu otázky a automatické předání tahu dalšímu týmu
+        function returnToBoard() {
+            const qKey = `${appState.currentQuestion.catIdx}-${appState.currentQuestion.val}`;
+            appState.answeredQuestions[qKey] = true;
+
+            appState.currentQuestion = null;
+
+            // Posunutí tahu na další tým v pořadí
+            appState.currentTurnIdx = (appState.currentTurnIdx + 1) % appState.numTeams;
+
+            showScreen('screen-board');
+            renderBoard();
+            renderBoardScoreboard();
+        }
+
+        // --- SYSTÉM UNDO / REDO (Krok zpět / Krok vpřed) ---
+        function triggerUndo() {
+            if (appState.history.length === 0) return;
+
+            const lastAction = appState.history.pop();
+            const team = appState.teams.find(t => t.id === lastAction.teamId);
+            
+            if (team) {
+                team.score -= lastAction.pointChange; // Odebereme/přičteme zpět změnu skóre
+                showToast(`🔄 Vráceno zpět bodování pro tým: <strong>${team.name}</strong>.`);
+                
+                // Pokud už k této otázce neexistují v historii žádné další změny, můžeme ji odemknout
+                const remainsAnswered = appState.history.some(h => h.questionKey === lastAction.questionKey);
+                if (!remainsAnswered) {
+                    delete appState.answeredQuestions[lastAction.questionKey];
+                }
+
+                // Uložíme do Redo zásobníku
+                appState.redoHistory.push(lastAction);
+            }
+
+            updateUndoRedoButtons();
+            renderBoard();
+            renderBoardScoreboard();
+
+            // Pokud jsme právě na detailu otázky, přerenderujeme ji
+            if (appState.currentQuestion) {
+                const originalVal = appState.currentQuestion.val;
+                openQuestion(appState.currentQuestion.catIdx, originalVal);
+                
+                // Pokud byla nápověda použita před krokem zpět, obnovíme její stav
+                if (lastAction.hintUsed) {
+                    activateHint();
+                }
+            }
+        }
+
+        function triggerRedo() {
+            if (appState.redoHistory.length === 0) return;
+
+            const redoAction = appState.redoHistory.pop();
+            const team = appState.teams.find(t => t.id === redoAction.teamId);
+
+            if (team) {
+                team.score += redoAction.pointChange; // Znovu aplikujeme změnu skóre
+                showToast(`➡️ Znovu aplikováno bodování pro tým: <strong>${team.name}</strong>.`);
+                
+                // Uzamkneme otázku zpět na herním poli
+                appState.answeredQuestions[redoAction.questionKey] = true;
+
+                // Vrátíme zpět do standardní historie
+                appState.history.push(redoAction);
+            }
+
+            updateUndoRedoButtons();
+            renderBoard();
+            renderBoardScoreboard();
+
+            // Pokud jsme právě na detailu otázky, přerenderujeme ji
+            if (appState.currentQuestion) {
+                const originalVal = appState.currentQuestion.val;
+                openQuestion(appState.currentQuestion.catIdx, originalVal);
+                if (redoAction.hintUsed) {
+                    activateHint();
+                }
+            }
+        }
+
+        // Viditelnost tlačítek Undo/Redo v hlavičce
+        function updateUndoRedoButtons() {
+            const undoBtn = document.getElementById('undo-btn');
+            const redoBtn = document.getElementById('redo-btn');
+
+            if (appState.history.length > 0) {
+                undoBtn.classList.remove('hidden');
+            } else {
+                undoBtn.classList.add('hidden');
+            }
+
+            if (appState.redoHistory.length > 0) {
+                redoBtn.classList.remove('hidden');
+            } else {
+                redoBtn.classList.add('hidden');
+            }
+        }
+
+        // --- KONEC HRY A STUPNĚ VÍTĚZŮ ---
+        function endGame() {
+            showScreen('screen-results');
+            SoundFX.playChime();
+            
+            // Seřazení týmů pro stupně vítězů
+            const sortedTeams = [...appState.teams].sort((a, b) => b.score - a.score);
+            
+            const container = document.getElementById('podium-container');
+            container.innerHTML = '';
+
+            // Vizualizace stupňů vítězů (1. střed, 2. vlevo, 3. vpravo)
+            const podiumPositions = [
+                { rank: 2, team: sortedTeams[1], height: "h-36", color: "bg-slate-800 border-slate-700", medal: "🥈" },
+                { rank: 1, team: sortedTeams[0], height: "h-48", color: "bg-amber-500/20 border-amber-500/40 text-amber-400", medal: "👑" },
+                { rank: 3, team: sortedTeams[2], height: "h-28", color: "bg-slate-850 border-slate-800", medal: "🥉" }
+            ];
+
+            // Pokud hrají pouze 2 týmy, upravíme uspořádání
+            const renderPositions = appState.numTeams === 2 ? [podiumPositions[0], podiumPositions[1]] : podiumPositions;
+
+            // Prohození pořadí na obrazovce zleva doprava (2. místo -> 1. místo -> 3. místo)
+            const uiOrder = appState.numTeams === 2 ? [0, 1] : [0, 1, 2];
+
+            uiOrder.forEach(idx => {
+                const pos = renderPositions[idx];
+                if (!pos || !pos.team) return;
+
+                container.innerHTML += `
+                    <div class="flex flex-col items-center flex-1 max-w-[200px] z-10">
+                        <span class="text-4xl mb-2">${pos.medal}</span>
+                        <span class="font-bold text-slate-100 text-sm text-center line-clamp-1">${pos.team.name}</span>
+                        <span class="text-xs text-slate-400 mb-2">${pos.team.score} b</span>
+                        <div class="w-full ${pos.height} ${pos.color} border-t-4 rounded-t-xl flex items-center justify-center font-extrabold text-2xl shadow-xl">
+                            ${pos.rank}.
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Čtvrté místo samostatně (pokud existuje)
+            if (appState.numTeams === 4 && sortedTeams[3]) {
+                const fourth = sortedTeams[3];
+                container.innerHTML += `
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-slate-950/60 px-6 py-2 rounded-full border border-slate-800 text-xs text-slate-400 z-10">
+                        4. místo: <strong>${fourth.name}</strong> (${fourth.score} b)
+                    </div>
+                `;
+            }
+
+            // Aktivace konfet na plátně
+            initConfetti();
+        }
+
+        // --- ÚSPĚŠNÁ GRAFIKA (CONFETTI) ---
+        let confettiInterval;
+        function initConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            const particles = [];
+            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#ec4899'];
+
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    r: Math.random() * 6 + 4,
+                    d: Math.random() * canvas.height,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.random() * 10 - 5,
+                    tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                    tiltAngle: 0
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach((p, index) => {
+                    p.tiltAngle += p.tiltAngleIncremental;
+                    p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+                    p.x += Math.sin(p.tiltAngle);
+                    p.tilt = Math.sin(p.tiltAngle - index / 3) * 15;
+
+                    if (p.y > canvas.height) {
+                        p.y = -10;
+                        p.x = Math.random() * canvas.width;
+                    }
+
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                    ctx.stroke();
+                });
+            }
+
+            if (confettiInterval) clearInterval(confettiInterval);
+            confettiInterval = setInterval(draw, 24);
+
+            // Zastavit konfety po 12 sekundách pro úsporu výkonu
+            setTimeout(() => {
+                clearInterval(confettiInterval);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }, 12000);
+        }
+
+        // --- POMOCNÉ FUNKCE ROZHRANÍ (UI HELPERS) ---
+        function showScreen(screenId) {
+            ['screen-setup', 'screen-board', 'screen-question', 'screen-results'].forEach(id => {
+                const el = document.getElementById(id);
+                if (id === screenId) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('custom-toast');
+            document.getElementById('toast-text').innerHTML = text;
+            toast.className = "fixed bottom-6 right-6 bg-slate-850 border border-amber-500/30 text-amber-300 px-5 py-3.5 rounded-xl shadow-2xl translate-y-0 opacity-100 transition-all duration-300 flex items-center space-x-3 z-50";
+            
+            setTimeout(() => {
+                toast.className = "fixed bottom-6 right-6 bg-slate-850 border border-amber-500/30 text-amber-300 px-5 py-3.5 rounded-xl shadow-2xl translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-3 z-50 pointer-events-none";
+            }, 4000);
+        }
+
+        function confirmReset() {
+            document.getElementById('modal-confirm').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('modal-confirm').classList.add('hidden');
+        }
+
+        function resetGame() {
+            closeConfirmModal();
+            appState = {
+                teams: [],
+                numTeams: 4,
+                syllabusMode: "L3",
+                currentQuestion: null,
+                answeredQuestions: {},
+                currentTurnIdx: 0,
+                history: [],
+                redoHistory: []
+            };
+            setTeamCount(4);
+            setSyllabusMode("L3");
+            updateUndoRedoButtons();
+            showScreen('screen-setup');
+            if (confettiInterval) clearInterval(confettiInterval);
+            showToast("🔄 Hra byla kompletně restartována.");
+        }
+    </script>
+</body>
+</html>
