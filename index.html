@@ -49,11 +49,11 @@
     <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 px-4 py-2 flex justify-between items-center z-10 shrink-0">
         <div class="flex items-center space-x-2.5">
             <!-- Vlastní SVG španělská vlajka pro spolehlivé zobrazení na všech zařízeních -->
-            <svg class="w-8 h-5 rounded shadow-sm border border-slate-700/50 shrink-0" viewBox="0 0 750 500" aria-hidden="true">
+            <svg class="w-8 h-5 rounded shadow-sm border border-slate-700/50 shrink-0" viewBox="0 0 750 500" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <rect width="750" height="500" fill="#c60b1e"/>
                 <rect y="125" width="750" height="250" fill="#fbe122"/>
-                <circle cx="250" cy="250" r="45" fill="#c60b1e" opacity="0.8"/>
-                <circle cx="250" cy="250" r="35" fill="#fbe122"/>
+                <rect x="220" y="180" width="60" height="80" fill="#fbe122" stroke="#c60b1e" stroke-width="8" rx="10"/>
+                <path d="M 220 220 L 280 220 M 250 180 L 250 260" stroke="#c60b1e" stroke-width="4"/>
             </svg>
             <div>
                 <h1 class="text-base font-bold text-amber-500 tracking-wide leading-tight">¡El Juego de Español!</h1>
@@ -95,7 +95,7 @@
             <!-- VOLBA ROZSAHU UČIVA -->
             <div class="flex flex-col items-center mb-6">
                 <span class="text-slate-400 font-medium mb-2.5 text-sm">Rozsah učiva (Syllabus):</span>
-                <div class="inline-flex rounded-xl p-1 bg-slate-950 border border-slate-800">
+                <div class="inline-flex rounded-xl p-1 bg-slate-955 border border-slate-800">
                     <button onclick="setSyllabusMode('L3')" id="btn-syllabus-l3" class="px-5 py-2 rounded-lg font-bold text-xs transition-all bg-amber-500 text-slate-955 shadow">
                         Lekce 1 - 3 (Kompletní)
                     </button>
@@ -248,7 +248,7 @@
                 </div>
                 <div class="flex items-center space-x-2 text-xs">
                     <span class="text-emerald-500 text-sm">🎯</span>
-                    <p class="text-slate-300"><strong>správně = +100, 200 či 300 bodů</strong> (dle obtížnosti)</p>
+                    <p class="text-slate-300"><strong>správně = +100, 200 či 300 bodů</strong> (max. 5 kol na obtížnost pro tým)</p>
                 </div>
             </div>
             <button onclick="initBonusRound()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-955 font-extrabold text-lg px-10 py-3.5 rounded-xl shadow-lg shadow-amber-500/10">
@@ -282,59 +282,77 @@
                 <!-- Podtitul mezikola (zobrazuje se pouze v přípravném mezikole) -->
                 <p id="bonus-intermission-subtext" class="hidden text-xs text-slate-450 mt-2">Připravte se, časomíra odstartuje ihned po kliknutí.</p>
 
-                <!-- Odpočet (skrývá se v přípravném mezikole) -->
-                <div id="bonus-timer-text-container" class="mt-4 text-slate-400 text-sm font-semibold min-h-[40px]">
-                    Zbývá: <span id="bonus-timer-sec" class="text-amber-400 font-extrabold text-2xl">10</span> s
+                <!-- Odpočet (Skrývá se při zobrazení správné odpovědi, aby nepřekážel) -->
+                <div id="bonus-timer-text-container" class="mt-4 text-slate-400 text-sm font-semibold h-[40px] flex items-center justify-center shrink-0">
+                    Zbývá: &nbsp; <span id="bonus-timer-sec" class="text-amber-400 font-extrabold text-2xl">10</span> s
                 </div>
 
-                <!-- Odhalená správná odpověď větším písmem (Zobrazí se pouze po odhalení / vypršení času) -->
-                <div id="bonus-answer-display" class="hidden bg-slate-950/80 border border-slate-800/80 px-10 py-5 rounded-2xl mt-4 w-full max-w-sm shrink-0">
-                    <p class="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Správná odpověď:</p>
+                <!-- Odhalená správná odpověď větším písmem bez jakéhokoliv rušivého pozadí a popisků -->
+                <div id="bonus-answer-display" class="hidden h-[40px] flex items-center justify-center shrink-0 mt-4">
                     <p id="bonus-correct-ans" class="text-4xl font-extrabold text-emerald-400 font-mono tracking-wider">habláis</p>
                 </div>
             </div>
 
-            <!-- NOVÝ STABILNÍ KONTEJNER PRO TLAČÍTKA (Předchází posouvání ovládacích prvků) -->
-            <div class="w-full max-w-md mx-auto h-20 flex items-center justify-center border-t border-slate-800 mt-6 pt-4 shrink-0">
-                <!-- Tlačítko 1: Spustit další kartu (Zobrazeno pouze v přípravném mezikole) -->
-                <button id="bonus-start-btn" onclick="startNextBonusCard()" class="hidden w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-955 font-extrabold py-3.5 rounded-xl shadow-lg shadow-amber-500/10 uppercase tracking-wider text-xs">
-                    ▶️ Spustit další kartu
-                </button>
-
-                <!-- Tlačítko 2: Zobrazit správnou odpověď (Zobrazeno během odpočtu) -->
-                <button id="bonus-reveal-btn" onclick="revealBonusAnswer()" class="hidden w-full bg-amber-500 hover:bg-amber-400 text-slate-955 font-extrabold py-3.5 rounded-xl shadow-lg transition-all text-xs uppercase tracking-wider">
-                    👁️ Zobrazit správnou odpověď
-                </button>
-
-                <!-- Skupina 3: Hodnocení Správně / Špatně (Zobrazeno po odhalení / vypršení času) -->
-                <div id="bonus-rate-controls" class="hidden grid grid-cols-2 gap-4 w-full">
-                    <button onclick="handleBonusCorrect()" class="bg-emerald-600 hover:bg-emerald-500 text-slate-955 font-extrabold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/10 text-xs uppercase tracking-wider">
-                        ✔️ Správně (+ body)
+            <!-- NOVÝ STABILNÍ KONTEJNER PRO TLAČÍTKA -->
+            <div class="w-full max-w-md mx-auto h-32 flex flex-col items-center justify-center border-t border-slate-800 mt-6 pt-4 shrink-0 space-y-3">
+                <div class="w-full flex items-center justify-center h-12">
+                    <!-- Tlačítko 1: Spustit další kartu (Zobrazeno pouze v přípravném mezikole) -->
+                    <button id="bonus-start-btn" onclick="startNextBonusCard()" class="hidden w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-955 font-extrabold py-3.5 rounded-xl shadow-lg shadow-amber-500/10 uppercase tracking-wider text-xs">
+                        ▶️ Spustit další kartu
                     </button>
-                    <button onclick="handleBonusWrong(false)" class="bg-red-600 hover:bg-red-500 text-slate-100 font-extrabold py-3.5 rounded-xl transition-all shadow-lg shadow-red-600/10 text-xs uppercase tracking-wider">
-                        ❌ Špatně / Vyřadit
+
+                    <!-- Tlačítko 2: Zobrazit správnou odpověď (Zobrazeno během odpočtu) -->
+                    <button id="bonus-reveal-btn" onclick="revealBonusAnswer()" class="hidden w-full bg-amber-500 hover:bg-amber-400 text-slate-955 font-extrabold py-3.5 rounded-xl shadow-lg transition-all text-xs uppercase tracking-wider">
+                        👁️ Zobrazit správnou odpověď
                     </button>
+
+                    <!-- Skupina 3: Hodnocení Správně / Špatně (Zobrazeno po odhalení / vypršení času) -->
+                    <div id="bonus-rate-controls" class="hidden grid grid-cols-2 gap-4 w-full">
+                        <button onclick="handleBonusCorrect()" class="bg-emerald-600 hover:bg-emerald-500 text-slate-955 font-extrabold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/10 text-xs uppercase tracking-wider">
+                            ✔️ Správně (+ body)
+                        </button>
+                        <button onclick="handleBonusWrong(false)" class="bg-red-600 hover:bg-red-500 text-slate-100 font-extrabold py-3.5 rounded-xl transition-all shadow-lg shadow-red-600/10 text-xs uppercase tracking-wider">
+                            ❌ Špatně / Vyřadit
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Tlačítko k předčasnému ukončení bonusového kola -->
+                <button onclick="endBonusRound()" class="text-slate-500 hover:text-red-400 text-xs font-bold transition-colors">
+                    🛑 Ukončit bonusové kolo
+                </button>
             </div>
         </section>
 
         <!-- 4. OBRAZOVKA: KONEC HRY / STUPNĚ VÍTĚZŮ -->
         <section id="screen-results" class="hidden w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center relative overflow-hidden transition-all">
             <!-- Canvas pro konfety -->
-            <canvas id="confetti-canvas" class="absolute inset-0 pointer-events-none z-0"></canvas>
+            <canvas id="confetti-canvas" class="absolute inset-0 pointer-events-none z-0 w-full h-full"></canvas>
 
-            <div class="relative z-10">
+            <div class="relative z-10 flex flex-col items-center">
                 <span class="text-5xl">🏆</span>
-                <h2 class="text-5xl font-bold my-4 text-white">Finální výsledky hry</h2>
-                <p class="text-slate-400 mb-8 max-w-lg mx-auto">Všem týmům děkujeme za účast. Zde jsou celkové výsledky dnešního španělského klání.</p>
+                <!-- ŠPANĚLSKÁ GRATULACE (Dynamicky se mění při odhalení vítěze) -->
+                <h2 id="results-title" class="text-5xl font-bold my-6 text-slate-400 transition-all duration-500">Finálové vyhlášení</h2>
 
-                <!-- Stupně vítězů -->
-                <div class="flex flex-col md:flex-row justify-center items-end space-y-6 md:space-y-0 md:space-x-4 mb-12" id="podium-container">
-                    <!-- JS vygeneruje stupně vítězů dynamicky dle výsledků -->
+                <!-- Stupně vítězů (S animovaným odhalováním) -->
+                <div class="flex flex-col md:flex-row justify-center items-end space-y-6 md:space-y-0 md:space-x-4 mb-8 min-h-[250px] w-full" id="podium-container">
+                    <!-- JS vygeneruje stupně vítězů dynamicky jako zamčené karty -->
                 </div>
 
-                <div class="flex justify-center space-x-4">
-                    <button onclick="confirmReset()" class="bg-amber-500 hover:bg-amber-400 text-slate-955 font-bold px-8 py-3.5 rounded-xl shadow-lg transition-all">
+                <!-- NOVÝ INTEGRÁLNÍ KONTEJNER PRO 4. MÍSTO (Rovněž zamčený na začátku a umístěný správně) -->
+                <div id="fourth-place-container" class="mb-8 z-10 relative shrink-0">
+                    <!-- JS vygeneruje 4. místo -->
+                </div>
+
+                <!-- OVLÁDACÍ TLAČÍTKO PRO POSTUPNÉ ODHALOVÁNÍ PODIUMU -->
+                <div id="reveal-controls" class="mb-6 flex justify-center w-full shrink-0">
+                    <button id="reveal-next-btn" onclick="revealNextRank()" class="bg-amber-500 hover:bg-amber-400 text-slate-955 font-extrabold px-8 py-3.5 rounded-xl shadow-lg shadow-amber-500/10 transition-all animate-pulse text-sm uppercase tracking-wider">
+                        🎉 Spustit slavnostní vyhlášení
+                    </button>
+                </div>
+
+                <div class="flex justify-center space-x-4 shrink-0">
+                    <button id="play-again-btn" onclick="confirmReset()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-8 py-3.5 rounded-xl shadow-lg transition-all">
                         Hrát znovu 🔄
                     </button>
                 </div>
@@ -384,7 +402,7 @@
             "cantar": { "yo": "canto", "tú": "cantas", "él/ella": "canta", "nosotros": "cantamos", "vosotros": "cantáis", "ellos/ellas": "cantan" },
             "escuchar": { "yo": "escucho", "tú": "escuchas", "él/ella": "escucha", "nosotros": "escuchamos", "vosotros": "escucháis", "ellos/ellas": "escuchan" },
             "completar": { "yo": "completo", "tú": "completas", "él/ella": "completa", "nosotros": "completamos", "vosotros": "completáis", "ellos/ellas": "completan" },
-            "leer": { "yo": "leo", "tú": "lees", "él/ella": "lee", "nosotros": "leemos", "vosotros": "leéis", "ellos/ellas": "leen" },
+            "reading": { "yo": "leo", "tú": "lees", "él/ella": "lee", "nosotros": "leemos", "vosotros": "leéis", "ellos/ellas": "leen" },
             "responder": { "yo": "respondo", "tú": "respondes", "él/ella": "responde", "nosotros": "respondemos", "vosotros": "respondéis", "ellos/ellas": "responden" }
         };
 
@@ -684,10 +702,100 @@
             bonusEliminated: {},   // teamId -> true
             bonusCurrentCard: null,
             bonusTimer: 10,
-            bonusIntervalId: null
+            bonusIntervalId: null,
+            bonusTeamRoundCount: {}, // teamId -> { easy: 0, medium: 0, hard: 0 }
+
+            // --- SLAVNOSTNÍ VYHLAŠOVÁNÍ ---
+            revealStep: 0,
+            revealQueue: [],
+            sortedTeamsResult: []
         };
 
-        // --- WEBOVÝ SYNTEZÁTOR ZVUKŮ ---
+        // --- ENGINY PRO CONFETTI (VLASTNÍ CANVAS ŘEŠENÍ PRO BURSTY I KONTINUÁLNÍ DÉŠŤ) ---
+        let confettiParticles = [];
+        let confettiAnimationId = null;
+        let isContinuousConfetti = false;
+
+        function initConfettiCanvas() {
+            const canvas = document.getElementById('confetti-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            confettiParticles = [];
+            isContinuousConfetti = false;
+            if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+
+            function updateConfetti() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (isContinuousConfetti && confettiParticles.length < 150) {
+                    const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#ec4899'];
+                    confettiParticles.push({
+                        x: Math.random() * canvas.width,
+                        y: -10,
+                        vx: Math.random() * 4 - 2,
+                        vy: Math.random() * 3 + 2,
+                        r: Math.random() * 5 + 4,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        tilt: Math.random() * 10 - 5,
+                        tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                        tiltAngle: 0
+                    });
+                }
+
+                for (let i = confettiParticles.length - 1; i >= 0; i--) {
+                    const p = confettiParticles[i];
+                    p.tiltAngle += p.tiltAngleIncremental;
+                    p.y += p.vy;
+                    p.x += p.vx + Math.sin(p.tiltAngle) * 0.5;
+                    p.tilt = Math.sin(p.tiltAngle) * 15;
+
+                    if (p.y > canvas.height + 20 || p.x < -20 || p.x > canvas.width + 20) {
+                        confettiParticles.splice(i, 1);
+                        continue;
+                    }
+
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                    ctx.stroke();
+                }
+
+                confettiAnimationId = requestAnimationFrame(updateConfetti);
+            }
+
+            updateConfetti();
+        }
+
+        function triggerExplosionConfetti(count) {
+            const canvas = document.getElementById('confetti-canvas');
+            if (!canvas) return;
+            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#ec4899'];
+            
+            for (let i = 0; i < count; i++) {
+                confettiParticles.push({
+                    x: canvas.width / 2 + (Math.random() * 200 - 100),
+                    y: canvas.height / 2 + (Math.random() * 100 - 50),
+                    vx: Math.random() * 12 - 6,
+                    vy: Math.random() * -12 - 4,
+                    r: Math.random() * 5 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.random() * 10 - 5,
+                    tiltAngleIncremental: Math.random() * 0.08 + 0.03,
+                    tiltAngle: Math.random() * Math.PI
+                });
+            }
+        }
+
+        function triggerContinuousConfetti() {
+            isContinuousConfetti = true;
+        }
+
+        // --- OBRAZOVKOVÝ AUDIO SYNTETIZÁTOR ---
         const SoundFX = {
             ctx: null,
             init() {
@@ -743,12 +851,7 @@
             }
         };
 
-        // --- INICIALIZACE A SPUŠTĚNÍ HRY ---
-        window.addEventListener('DOMContentLoaded', () => {
-            renderTeamInputs();
-            updateUndoRedoButtons();
-        });
-
+        // --- NASTAVENÍ HRY ---
         function setSyllabusMode(mode) {
             appState.syllabusMode = mode;
             const btnL3 = document.getElementById('btn-syllabus-l3');
@@ -799,18 +902,18 @@
         function startGame() {
             appState.teams = [];
             for (let i = 0; i < appState.numTeams; i++) {
-                const nameInput = document.getElementById(`input-team-name-${i}`);
+                const nameInput = document.getElementById('input-team-name-' + i);
                 appState.teams.push({
                     id: i,
                     name: nameInput.value.trim() || `Tým ${i + 1}`,
-                    score: 0
+                    score: 0,
+                    bonusScore: 0
                 });
             }
             appState.currentTurnIdx = 0;
             const headerLabel = document.getElementById('header-syllabus-label');
             headerLabel.innerText = appState.syllabusMode === 'L3' ? 'Výukový herní kvíz • Lekce 1 - 3' : 'Výukový herní kvíz • Lekce 1 - 2';
 
-            // Zviditelnit tlačítko bleskového kvízu v záhlaví
             document.getElementById('bonus-shortcut-btn').classList.remove('hidden');
 
             showScreen('screen-board');
@@ -819,18 +922,17 @@
             SoundFX.playChime();
         }
 
-        // --- GENERUJE A SPRAVUJE HERNÍ POLE ---
+        // --- HERNÍ JEOPARDY POLE ---
         function renderBoard() {
             const container = document.getElementById('jeopardy-buttons');
             container.innerHTML = '';
             pointValues.forEach(val => {
                 for (let catIdx = 0; catIdx < categories.length; catIdx++) {
-                    // Korekce hodnoty pro zobrazení mřížky v případě 600 vs 650
                     const lookupVal = (catIdx === 2 && val === 600) ? 650 : val;
                     const isAnswered = appState.answeredQuestions[`${catIdx}-${val}`];
                     if (isAnswered) {
                         container.innerHTML += `
-                            <button disabled class="bg-slate-950 border border-slate-900 text-slate-700 font-bold py-6 rounded-xl flex items-center justify-center text-xl cursor-default transition-all">
+                            <button disabled class="bg-slate-955 border border-slate-900 text-slate-700 font-bold py-6 rounded-xl flex items-center justify-center text-xl cursor-default transition-all">
                                 ✓
                             </button>
                         `;
@@ -844,7 +946,6 @@
                 }
             });
 
-            // Kontrola dohrání hracího pole -> přechod na bonusové kolo
             const totalQuestions = categories.length * pointValues.length;
             const answeredCount = Object.keys(appState.answeredQuestions).length;
             if (answeredCount === totalQuestions && !appState.bonusActive) {
@@ -864,7 +965,7 @@
             container.innerHTML = '';
             const teamColors = [
                 "border-red-500/30 bg-red-950/10 hover:bg-red-950/20",
-                "border-amber-500/30 bg-amber-950/10 hover:bg-amber-950/20",
+                "border-amber-500/30 bg-amber-955/10 hover:bg-amber-955/20",
                 "border-emerald-500/30 bg-emerald-950/10 hover:bg-emerald-950/20",
                 "border-blue-500/30 bg-blue-950/10 hover:bg-blue-950/20"
             ];
@@ -893,56 +994,341 @@
             });
         }
 
-        // --- DETAIL OTÁZKY ---
-        function openQuestion(catIdx, val) {
-            const lookupVal = (catIdx === 2 && val === 600) ? 650 : val;
-            const currentDataSet = appState.syllabusMode === 'L3' ? gameDataL3 : gameDataL2;
-            const data = currentDataSet[catIdx][lookupVal];
+        // --- BONUS ROUND STATE ---
+        function startBonusRoundTransition() {
+            document.getElementById('bonus-shortcut-btn').classList.add('hidden');
+            document.getElementById('undo-btn').classList.add('hidden');
+            document.getElementById('redo-btn').classList.add('hidden');
 
-            appState.currentQuestion = {
-                catIdx: catIdx,
-                val: val,
-                data: data,
-                hintUsed: false
-            };
-
-            document.getElementById('q-category-tag').innerText = categories[catIdx];
-            document.getElementById('q-val-title').innerText = `Otázka za ${val} bodů`;
-            document.getElementById('q-prompt-text').innerText = data.q;
-            document.getElementById('q-hint-text').innerText = data.hint;
-            document.getElementById('q-answer-text').innerText = data.a;
-
-            document.getElementById('q-hint-text').classList.add('hidden');
-            document.getElementById('hint-warning-tag').classList.add('hidden');
-            document.getElementById('q-answer-container').classList.add('hidden');
-            
-            const hintBtn = document.getElementById('hint-trigger-btn');
-            hintBtn.classList.remove('pointer-events-none', 'opacity-50');
-
-            document.getElementById('score-plus-label').innerText = `+${val}`;
-            document.getElementById('score-minus-label').innerText = `-${val / 2}`;
-
-            const teamListContainer = document.getElementById('scoring-team-list');
-            teamListContainer.innerHTML = '';
-            appState.teams.forEach((team, idx) => {
-                const isSelected = (idx === appState.currentTurnIdx);
-                teamListContainer.innerHTML += `
-                    <label class="flex items-center space-x-3 bg-slate-900/60 hover:bg-slate-800 border ${isSelected ? 'border-amber-500/60 bg-slate-800' : 'border-slate-800'} rounded-xl px-3 py-2 cursor-pointer transition-colors">
-                        <input type="radio" name="scoring-team-radio" value="${idx}" ${isSelected ? 'checked' : ''} class="accent-amber-500 h-4 w-4">
-                        <div class="flex-grow flex justify-between items-center">
-                            <span class="font-semibold text-slate-200 text-xs">
-                                ${team.name} ${isSelected ? '<span class="text-amber-400 text-[10px] ml-1 font-bold">(na tahu)</span>' : ''}
-                            </span>
-                            <span class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700">${team.score} b</span>
-                        </div>
-                    </label>
-                `;
-            });
-
-            showScreen('screen-question');
+            showScreen('screen-bonus-intro');
             SoundFX.playChime();
         }
 
+        function initBonusRound() {
+            appState.bonusActive = true;
+            appState.bonusEliminated = {};
+            appState.bonusCurrentTier = 'easy';
+            appState.bonusTeamRoundCount = {};
+            
+            // Inicializace herních statistik pro každý tým
+            appState.teams.forEach(team => {
+                appState.bonusTeamRoundCount[team.id] = { easy: 0, medium: 0, hard: 0 };
+            });
+
+            let rVerbs, mVerbs, hVerbs;
+            if (appState.syllabusMode === 'L3') {
+                rVerbs = ["hablar", "comer", "escribir"];
+                mVerbs = ["ser", "estar", "tener"];
+                hVerbs = ["dormir", "preferir", "querer"];
+            } else {
+                rVerbs = ["cantar", "escuchar", "completar"];
+                mVerbs = ["escribir", "leer", "responder"];
+                hVerbs = ["ser", "tener", "llamarse"];
+            }
+
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            let easyDeck = [];
+            rVerbs.forEach(v => {
+                pronouns.forEach(p => {
+                    easyDeck.push({ verb: v, pronoun: p, ans: conjugations[v][p], tier: 'easy', points: 100 });
+                });
+            });
+
+            let mediumDeck = [];
+            mVerbs.forEach(v => {
+                pronouns.forEach(p => {
+                    mediumDeck.push({ verb: v, pronoun: p, ans: conjugations[v][p], tier: 'medium', points: 200 });
+                });
+            });
+
+            let hardDeck = [];
+            hVerbs.forEach(v => {
+                pronouns.forEach(p => {
+                    hardDeck.push({ verb: v, pronoun: p, ans: conjugations[v][p], tier: 'hard', points: 300 });
+                });
+            });
+
+            appState.bonusDecks = {
+                easy: shuffle(easyDeck),
+                medium: shuffle(mediumDeck),
+                hard: shuffle(hardDeck)
+            };
+
+            showScreen('screen-bonus');
+            appState.currentTurnIdx = 0;
+            triggerNextBonusTurn();
+        }
+
+        function renderBonusScoreboard() {
+            const container = document.getElementById('bonus-scoreboard');
+            container.innerHTML = '';
+            const teamColors = [
+                "border-red-500/30 bg-red-950/10",
+                "border-amber-500/30 bg-amber-955/10",
+                "border-emerald-500/30 bg-emerald-950/10",
+                "border-blue-500/30 bg-blue-950/10"
+            ];
+            const textColors = ["text-red-400", "text-amber-400", "text-emerald-400", "text-blue-400"];
+
+            appState.teams.forEach((team, idx) => {
+                const isCurrentTurn = (idx === appState.currentTurnIdx);
+                const isEliminated = appState.bonusEliminated[team.id];
+                
+                let cardStyle = `bg-slate-900 border ${teamColors[idx]} p-3 rounded-xl flex flex-col items-center justify-center relative overflow-hidden transition-all`;
+                if (isCurrentTurn && !isEliminated) {
+                    cardStyle += ` ring-4 ring-amber-500 border-amber-500 scale-[1.02] active-turn-ring`;
+                } else if (isEliminated) {
+                    cardStyle += ` opacity-30 bg-slate-950 border-slate-955`;
+                }
+
+                container.innerHTML += `
+                    <div class="${cardStyle}">
+                        ${isCurrentTurn && !isEliminated ? `
+                            <span class="absolute top-0 right-0 bg-amber-500 text-slate-955 text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded-bl">
+                                Hraje
+                            </span>
+                        ` : ''}
+                        ${isEliminated ? `
+                            <span class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded-bl">
+                                Vyřazen
+                            </span>
+                        ` : ''}
+                        <span class="text-[10px] uppercase font-bold text-slate-400">${team.name}</span>
+                        <span class="text-xl font-extrabold ${textColors[idx]}">${team.bonusScore || 0} b</span>
+                    </div>
+                `;
+            });
+        }
+
+        function triggerNextBonusTurn() {
+            const activeTeams = appState.teams.filter(t => !appState.bonusEliminated[t.id]);
+            if (activeTeams.length === 0) {
+                endBonusRound();
+                return;
+            }
+
+            const currentTier = appState.bonusCurrentTier;
+
+            // Kontrola limitu 5 kol na obtížnost pro každý aktivní tým
+            const teamsNeedingPlay = activeTeams.filter(t => (appState.bonusTeamRoundCount[t.id]?.[currentTier] || 0) < 5);
+            
+            if (teamsNeedingPlay.length === 0) {
+                // Všichni aktivní odehráli 5 kol v této obtížnosti -> přecházíme na další!
+                if (appState.bonusCurrentTier === 'easy') {
+                    appState.bonusCurrentTier = 'medium';
+                    showToast("🌟 Skvělé! Pravidelná slovesa vyčerpána. Přecházíme na STŘEDNÍ nepravidelná slovesa (200 b)!");
+                    triggerNextBonusTurn();
+                    return;
+                } else if (appState.bonusCurrentTier === 'medium') {
+                    appState.bonusCurrentTier = 'hard';
+                    showToast("🔥 Výborně! Přecházíme na NEJTĚŽŠÍ kmenová a zvratná slovesa (300 b)!");
+                    triggerNextBonusTurn();
+                    return;
+                } else {
+                    // Došli jsme na konec 'hard'
+                    endBonusRound();
+                    return;
+                }
+            }
+
+            // Hledání dalšího týmu v rotaci, který ještě nemá vyčerpaný limit 5 kol
+            let foundNextTeam = false;
+            for (let i = 0; i < appState.numTeams; i++) {
+                let checkIdx = (appState.currentTurnIdx + i) % appState.numTeams;
+                let checkTeam = appState.teams[checkIdx];
+                if (!appState.bonusEliminated[checkTeam.id] && (appState.bonusTeamRoundCount[checkTeam.id]?.[currentTier] || 0) < 5) {
+                    appState.currentTurnIdx = checkIdx;
+                    foundNextTeam = true;
+                    break;
+                }
+            }
+
+            if (!foundNextTeam) {
+                endBonusRound();
+                return;
+            }
+
+            renderBonusScoreboard();
+
+            let activeDeck = appState.bonusDecks[appState.bonusCurrentTier];
+            if (activeDeck.length === 0) {
+                if (appState.bonusCurrentTier === 'easy') {
+                    appState.bonusCurrentTier = 'medium';
+                    showToast("🌟 Skvělé! Pravidelná slovesa vyčerpána. Přecházíme na STŘEDNÍ nepravidelná slovesa (200 b)!");
+                } else if (appState.bonusCurrentTier === 'medium') {
+                    appState.bonusCurrentTier = 'hard';
+                    showToast("🔥 Výborně! Přecházíme na NEJTĚŽŠÍ kmenová a zvratná slovesa (300 b)!");
+                } else {
+                    endBonusRound();
+                    return;
+                }
+                activeDeck = appState.bonusDecks[appState.bonusCurrentTier];
+            }
+
+            if (activeDeck.length === 0) {
+                endBonusRound();
+                return;
+            }
+
+            const card = activeDeck.pop();
+            appState.bonusCurrentCard = card;
+
+            // Zobrazíme mezistav přípravy přímo v hracím poli
+            document.getElementById('bonus-card-header').classList.add('hidden');
+            document.getElementById('bonus-timer-text-container').classList.add('hidden');
+            document.getElementById('bonus-answer-display').classList.add('hidden');
+            document.getElementById('bonus-rate-controls').classList.add('hidden');
+            document.getElementById('bonus-reveal-btn').classList.add('hidden');
+
+            document.getElementById('bonus-intermission-subtext').classList.remove('hidden');
+            document.getElementById('bonus-start-btn').classList.remove('hidden');
+
+            const nextTeamName = appState.teams[appState.currentTurnIdx].name;
+            document.getElementById('bonus-prompt-text').innerHTML = `
+                <span class="text-slate-400 text-lg font-normal block mb-2">Příprava na další kartu</span>
+                <span class="text-amber-400 font-extrabold text-3xl md:text-4xl">${nextTeamName}</span>
+            `;
+
+            const bar = document.getElementById('bonus-timer-bar');
+            bar.style.transition = 'none';
+            bar.style.width = '100%';
+        }
+
+        function startNextBonusCard() {
+            document.getElementById('bonus-card-header').classList.remove('hidden');
+            
+            const timerContainer = document.getElementById('bonus-timer-text-container');
+            timerContainer.classList.remove('hidden');
+            timerContainer.innerHTML = `Zbývá: &nbsp; <span id="bonus-timer-sec" class="text-amber-400 font-extrabold text-2xl">10</span> s`;
+            
+            document.getElementById('bonus-intermission-subtext').classList.add('hidden');
+            
+            document.getElementById('bonus-start-btn').classList.add('hidden');
+            document.getElementById('bonus-reveal-btn').classList.remove('hidden');
+            document.getElementById('bonus-answer-display').classList.add('hidden');
+            document.getElementById('bonus-rate-controls').classList.add('hidden');
+
+            const card = appState.bonusCurrentCard;
+            const currentTier = appState.bonusCurrentTier;
+            const currentTeam = appState.teams[appState.currentTurnIdx];
+
+            // Inkrementace odehraných kol pro daného hráče v aktuální obtížnosti
+            if (!appState.bonusTeamRoundCount[currentTeam.id]) {
+                appState.bonusTeamRoundCount[currentTeam.id] = { easy: 0, medium: 0, hard: 0 };
+            }
+            appState.bonusTeamRoundCount[currentTeam.id][currentTier]++;
+
+            const tierNames = { easy: "Lehká slovesa (100 b)", medium: "Střední slovesa (200 b)", hard: "Těžká slovesa (300 b)" };
+            document.getElementById('bonus-tier-badge').innerText = tierNames[card.tier];
+            document.getElementById('bonus-prompt-text').innerText = `${card.pronoun.toUpperCase()} ${card.verb.toUpperCase()}`;
+            document.getElementById('bonus-correct-ans').innerText = card.ans;
+
+            const activeTeams = appState.teams.filter(t => !appState.bonusEliminated[t.id]);
+            const maxTime = activeTeams.length === 1 ? 7 : 10;
+            appState.bonusTimer = maxTime;
+
+            const bar = document.getElementById('bonus-timer-bar');
+            bar.style.transition = 'none';
+            bar.style.width = '100%';
+            bar.className = "h-full bg-emerald-500";
+            
+            setTimeout(() => {
+                bar.style.transition = `width ${maxTime}s linear`;
+                bar.style.width = '0%';
+            }, 50);
+
+            clearInterval(appState.bonusIntervalId);
+            appState.bonusIntervalId = setInterval(() => {
+                appState.bonusTimer--;
+                const secText = document.getElementById('bonus-timer-sec');
+                if (secText) secText.innerText = appState.bonusTimer;
+
+                if (appState.bonusTimer <= maxTime * 0.5 && appState.bonusTimer > maxTime * 0.25) {
+                    bar.className = "h-full bg-amber-500";
+                } else if (appState.bonusTimer <= maxTime * 0.25) {
+                    bar.className = "h-full bg-red-500 animate-pulse";
+                }
+
+                if (appState.bonusTimer <= 0) {
+                    clearInterval(appState.bonusIntervalId);
+                    handleBonusTimeout();
+                }
+            }, 1000);
+        }
+
+        function revealBonusAnswer() {
+            clearInterval(appState.bonusIntervalId);
+            SoundFX.playChime();
+
+            const bar = document.getElementById('bonus-timer-bar');
+            const computedStyle = window.getComputedStyle(bar);
+            const currentWidth = computedStyle.width;
+            bar.style.transition = 'none';
+            bar.style.width = currentWidth;
+
+            // Skryjeme odpočet času, aby nepřekážel
+            document.getElementById('bonus-timer-text-container').classList.add('hidden');
+
+            document.getElementById('bonus-reveal-btn').classList.add('hidden');
+            document.getElementById('bonus-answer-display').classList.remove('hidden');
+            document.getElementById('bonus-rate-controls').classList.remove('hidden');
+        }
+
+        function handleBonusTimeout() {
+            SoundFX.playWrong();
+            document.getElementById('bonus-timer-text-container').classList.add('hidden');
+            
+            document.getElementById('bonus-reveal-btn').classList.add('hidden');
+            document.getElementById('bonus-answer-display').classList.remove('hidden');
+            document.getElementById('bonus-rate-controls').classList.remove('hidden');
+        }
+
+        function handleBonusCorrect() {
+            clearInterval(appState.bonusIntervalId);
+            SoundFX.playCorrect();
+
+            const currentTeam = appState.teams[appState.currentTurnIdx];
+            const points = appState.bonusCurrentCard.points;
+            currentTeam.bonusScore = (currentTeam.bonusScore || 0) + points;
+
+            showToast(`✅ <strong>${currentTeam.name}</strong> správně vyčasoval sloveso a získává <strong>+${points}</strong> b.`);
+
+            appState.currentTurnIdx = (appState.currentTurnIdx + 1) % appState.numTeams;
+            triggerNextBonusTurn();
+        }
+
+        function handleBonusWrong(isTimeout) {
+            clearInterval(appState.bonusIntervalId);
+            SoundFX.playWrong();
+
+            const currentTeam = appState.teams[appState.currentTurnIdx];
+            appState.bonusEliminated[currentTeam.id] = true;
+
+            if (isTimeout) {
+                showToast(`⏱️ Vypršel čas! Tým <strong>${currentTeam.name}</strong> byl vyřazen z bonusového kola.`);
+            } else {
+                showToast(`❌ Chyba! Tým <strong>${currentTeam.name}</strong> byl vyřazen z bonusového kola.`);
+            }
+
+            appState.currentTurnIdx = (appState.currentTurnIdx + 1) % appState.numTeams;
+            triggerNextBonusTurn();
+        }
+
+        function endBonusRound() {
+            clearInterval(appState.bonusIntervalId);
+            appState.bonusActive = false;
+            showToast("🏁 Bonusové kolo skončilo! Přejděme na slavnostní vyhlášení výsledků...");
+            endGame();
+        }
+
+        // --- HERNÍ DETAIL OTÁZKY ---
         function activateHint() {
             if (appState.currentQuestion.hintUsed) return;
             appState.currentQuestion.hintUsed = true;
@@ -955,18 +1341,13 @@
 
             const originalVal = appState.currentQuestion.val;
             const newWinnable = originalVal / 2;
-            const originalPenalty = originalVal / 2; // Penalizace zůstává plná
+            const originalPenalty = originalVal / 2;
 
             document.getElementById('score-plus-label').innerText = `+${newWinnable}`;
             document.getElementById('score-minus-label').innerText = `-${originalPenalty}`;
 
             SoundFX.playWrong();
             showToast("💡 Nápověda zobrazena. Výhra byla snížena na 50 %, ale penalizace zůstává plná!");
-        }
-
-        function revealAnswer() {
-            document.getElementById('q-answer-container').classList.remove('hidden');
-            SoundFX.playChime();
         }
 
         function applyScore(isCorrect) {
@@ -1014,491 +1395,168 @@
             }
         }
 
-        function returnToBoard() {
-            const qKey = `${appState.currentQuestion.catIdx}-${appState.currentQuestion.val}`;
-            appState.answeredQuestions[qKey] = true;
-            appState.currentQuestion = null;
-
-            appState.currentTurnIdx = (appState.currentTurnIdx + 1) % appState.numTeams;
-
-            showScreen('screen-board');
-            renderBoard();
-            renderBoardScoreboard();
-        }
-
-        function cancelQuestion() {
-            appState.currentQuestion = null;
-            showScreen('screen-board');
-            renderBoard();
-            renderBoardScoreboard();
-            showToast("↩️ Výběr otázky zrušen (otázka zůstává neodehraná).");
-        }
-
-        // --- SYSTÉM UNDO / REDO ---
-        function triggerUndo() {
-            if (appState.history.length === 0) return;
-
-            const lastAction = appState.history.pop();
-            const team = appState.teams.find(t => t.id === lastAction.teamId);
-            
-            if (team) {
-                team.score -= lastAction.pointChange;
-                showToast(`🔄 Vráceno zpět bodování pro tým: <strong>${team.name}</strong>.`);
-                
-                const remainsAnswered = appState.history.some(h => h.questionKey === lastAction.questionKey);
-                if (!remainsAnswered) {
-                    delete appState.answeredQuestions[lastAction.questionKey];
-                }
-                appState.redoHistory.push(lastAction);
-            }
-
-            updateUndoRedoButtons();
-            renderBoard();
-            renderBoardScoreboard();
-
-            if (appState.currentQuestion) {
-                const originalVal = appState.currentQuestion.val;
-                openQuestion(appState.currentQuestion.catIdx, originalVal);
-                if (lastAction.hintUsed) {
-                    activateHint();
-                }
-            }
-        }
-
-        function triggerRedo() {
-            if (appState.redoHistory.length === 0) return;
-
-            const redoAction = appState.redoHistory.pop();
-            const team = appState.teams.find(t => t.id === redoAction.teamId);
-
-            if (team) {
-                team.score += redoAction.pointChange;
-                showToast(`➡️ Znovu aplikováno bodování pro tým: <strong>${team.name}</strong>.`);
-                appState.answeredQuestions[redoAction.questionKey] = true;
-                appState.history.push(redoAction);
-            }
-
-            updateUndoRedoButtons();
-            renderBoard();
-            renderBoardScoreboard();
-
-            if (appState.currentQuestion) {
-                const originalVal = appState.currentQuestion.val;
-                openQuestion(appState.currentQuestion.catIdx, originalVal);
-                if (redoAction.hintUsed) {
-                    activateHint();
-                }
-            }
-        }
-
-        function updateUndoRedoButtons() {
-            const undoBtn = document.getElementById('undo-btn');
-            const redoBtn = document.getElementById('redo-btn');
-            undoBtn.classList.toggle('hidden', appState.history.length === 0);
-            redoBtn.classList.toggle('hidden', appState.redoHistory.length === 0);
-        }
-
-        // --- SPUŠTĚNÍ BONUSOVÉHO KOLA ---
-        function startBonusRoundTransition() {
-            // Skryje nepotřebná tlačítka z hlavičky
-            document.getElementById('bonus-shortcut-btn').classList.add('hidden');
-            document.getElementById('undo-btn').classList.add('hidden');
-            document.getElementById('redo-btn').classList.add('hidden');
-
-            showScreen('screen-bonus-intro');
-            SoundFX.playChime();
-        }
-
-        function initBonusRound() {
-            appState.bonusActive = true;
-            appState.bonusEliminated = {};
-            appState.bonusCurrentTier = 'easy';
-            
-            // Definice sloves podle režimu lekcí
-            let rVerbs, mVerbs, hVerbs;
-            if (appState.syllabusMode === 'L3') {
-                rVerbs = ["hablar", "comer", "escribir"];
-                mVerbs = ["ser", "estar", "tener"];
-                hVerbs = ["dormir", "preferir", "querer"];
-            } else {
-                rVerbs = ["cantar", "escuchar", "completar"];
-                mVerbs = ["escribir", "leer", "responder"];
-                hVerbs = ["ser", "tener", "llamarse"];
-            }
-
-            // Shuffle pomocná funkce
-            function shuffle(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-                return array;
-            }
-
-            // Generování kompletního balíčku karet
-            let easyDeck = [];
-            rVerbs.forEach(v => {
-                pronouns.forEach(p => {
-                    easyDeck.push({ verb: v, pronoun: p, ans: conjugations[v][p], tier: 'easy', points: 100 });
-                });
-            });
-
-            let mediumDeck = [];
-            mVerbs.forEach(v => {
-                pronouns.forEach(p => {
-                    mediumDeck.push({ verb: v, pronoun: p, ans: conjugations[v][p], tier: 'medium', points: 200 });
-                });
-            });
-
-            let hardDeck = [];
-            hVerbs.forEach(v => {
-                pronouns.forEach(p => {
-                    hardDeck.push({ verb: v, pronoun: p, ans: conjugations[v][p], tier: 'hard', points: 300 });
-                });
-            });
-
-            appState.bonusDecks = {
-                easy: shuffle(easyDeck),
-                medium: shuffle(mediumDeck),
-                hard: shuffle(hardDeck)
-            };
-
-            showScreen('screen-bonus');
-            appState.currentTurnIdx = 0; // Začíná tým 1
-            triggerNextBonusTurn();
-        }
-
-        // Vykreslení speciálního skóre nahoře v bonusovém kole
-        function renderBonusScoreboard() {
-            const container = document.getElementById('bonus-scoreboard');
-            container.innerHTML = '';
-            const teamColors = [
-                "border-red-500/30 bg-red-950/10",
-                "border-amber-500/30 bg-amber-950/10",
-                "border-emerald-500/30 bg-emerald-950/10",
-                "border-blue-500/30 bg-blue-950/10"
-            ];
-            const textColors = ["text-red-400", "text-amber-400", "text-emerald-400", "text-blue-400"];
-
-            appState.teams.forEach((team, idx) => {
-                const isCurrentTurn = (idx === appState.currentTurnIdx);
-                const isEliminated = appState.bonusEliminated[team.id];
-                
-                let cardStyle = `bg-slate-900 border ${teamColors[idx]} p-3 rounded-xl flex flex-col items-center justify-center relative overflow-hidden transition-all`;
-                if (isCurrentTurn && !isEliminated) {
-                    cardStyle += ` ring-4 ring-amber-500 border-amber-500 scale-[1.02] active-turn-ring`;
-                } else if (isEliminated) {
-                    cardStyle += ` opacity-30 bg-slate-950 border-slate-950`;
-                }
-
-                container.innerHTML += `
-                    <div class="${cardStyle}">
-                        ${isCurrentTurn && !isEliminated ? `
-                            <span class="absolute top-0 right-0 bg-amber-500 text-slate-955 text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded-bl">
-                                Hraje
-                            </span>
-                        ` : ''}
-                        ${isEliminated ? `
-                            <span class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded-bl">
-                                Vyřazen
-                            </span>
-                        ` : ''}
-                        <span class="text-[10px] uppercase font-bold text-slate-400">${team.name}</span>
-                        <span class="text-xl font-extrabold ${textColors[idx]}">${team.score} b</span>
-                    </div>
-                `;
-            });
-        }
-
-        // Bleskový cyklus: Další karta (Fáze 3: Zobrazení přípravné obrazovky)
-        function triggerNextBonusTurn() {
-            // Kontrola přeživších týmů
-            const activeTeams = appState.teams.filter(t => !appState.bonusEliminated[t.id]);
-            if (activeTeams.length === 0) {
-                endBonusRound();
-                return;
-            }
-
-            // Ošetření střídání aktivních (nevyřazených) týmů
-            while (appState.bonusEliminated[appState.teams[appState.currentTurnIdx].id]) {
-                appState.currentTurnIdx = (appState.currentTurnIdx + 1) % appState.numTeams;
-            }
-
-            renderBonusScoreboard();
-
-            // Tahání karty z aktuálního balíčku
-            let activeDeck = appState.bonusDecks[appState.bonusCurrentTier];
-            if (activeDeck.length === 0) {
-                // Postup do vyšší ligy
-                if (appState.bonusCurrentTier === 'easy') {
-                    appState.bonusCurrentTier = 'medium';
-                    showToast("🌟 Skvělé! Pravidelná slovesa vyčerpána. Přecházíme na STŘEDNÍ nepravidelná slovesa (200 b)!");
-                } else if (appState.bonusCurrentTier === 'medium') {
-                    appState.bonusCurrentTier = 'hard';
-                    showToast("🔥 Výborně! Přecházíme na NEJTĚŽŠÍ kmenová a zvratná slovesa (300 b)!");
-                } else {
-                    endBonusRound();
-                    return;
-                }
-                activeDeck = appState.bonusDecks[appState.bonusCurrentTier];
-            }
-
-            if (activeDeck.length === 0) {
-                endBonusRound();
-                return;
-            }
-
-            // Uložíme kartu, ale nespustíme odpočet hned
-            const card = activeDeck.pop();
-            appState.bonusCurrentCard = card;
-
-            // Zobrazíme mezistav přípravy přímo v hracím poli
-            document.getElementById('bonus-card-header').classList.add('hidden');
-            document.getElementById('bonus-timer-text-container').classList.add('hidden');
-            document.getElementById('bonus-answer-display').classList.add('hidden');
-            document.getElementById('bonus-rate-controls').classList.add('hidden');
-            document.getElementById('bonus-reveal-btn').classList.add('hidden');
-
-            document.getElementById('bonus-intermission-subtext').classList.remove('hidden');
-            document.getElementById('bonus-start-btn').classList.remove('hidden');
-
-            const nextTeamName = appState.teams[appState.currentTurnIdx].name;
-            document.getElementById('bonus-prompt-text').innerHTML = `
-                <span class="text-slate-400 text-lg font-normal block mb-2">Příprava na další kartu</span>
-                <span class="text-amber-400 font-extrabold text-3xl md:text-4xl">${nextTeamName}</span>
-            `;
-
-            // Zastavení lišty
-            const bar = document.getElementById('bonus-timer-bar');
-            bar.style.transition = 'none';
-            bar.style.width = '100%';
-        }
-
-        // Spuštění odpočtu a zobrazení karty po kliknutí moderátora
-        function startNextBonusCard() {
-            // Zobrazení herních prvků
-            document.getElementById('bonus-card-header').classList.remove('hidden');
-            document.getElementById('bonus-timer-text-container').classList.remove('hidden');
-            document.getElementById('bonus-intermission-subtext').classList.add('hidden');
-            
-            // Tlačítka v pevném kontejneru
-            document.getElementById('bonus-start-btn').classList.add('hidden');
-            document.getElementById('bonus-reveal-btn').classList.remove('hidden');
-            document.getElementById('bonus-answer-display').classList.add('hidden');
-            document.getElementById('bonus-rate-controls').classList.add('hidden');
-
-            const card = appState.bonusCurrentCard;
-            const tierNames = { easy: "Lehká slovesa (100 b)", medium: "Střední slovesa (200 b)", hard: "Těžká slovesa (300 b)" };
-            document.getElementById('bonus-tier-badge').innerText = tierNames[card.tier];
-            document.getElementById('bonus-prompt-text').innerText = `${card.pronoun.toUpperCase()} ${card.verb.toUpperCase()}`;
-            document.getElementById('bonus-correct-ans').innerText = card.ans;
-
-            document.getElementById('bonus-timer-text-container').innerHTML = `Zbývá: <span id="bonus-timer-sec" class="text-amber-400 font-extrabold text-2xl">10</span> s`;
-
-            const activeTeams = appState.teams.filter(t => !appState.bonusEliminated[t.id]);
-            const maxTime = activeTeams.length === 1 ? 7 : 10;
-            appState.bonusTimer = maxTime;
-
-            // Reset a odstartování lišty
-            const bar = document.getElementById('bonus-timer-bar');
-            bar.style.transition = 'none';
-            bar.style.width = '100%';
-            bar.className = "h-full bg-emerald-500";
-            
-            setTimeout(() => {
-                bar.style.transition = `width ${maxTime}s linear`;
-                bar.style.width = '0%';
-            }, 50);
-
-            clearInterval(appState.bonusIntervalId);
-            appState.bonusIntervalId = setInterval(() => {
-                appState.bonusTimer--;
-                const secText = document.getElementById('bonus-timer-sec');
-                if (secText) secText.innerText = appState.bonusTimer;
-
-                if (appState.bonusTimer <= maxTime * 0.5 && appState.bonusTimer > maxTime * 0.25) {
-                    bar.className = "h-full bg-amber-500";
-                } else if (appState.bonusTimer <= maxTime * 0.25) {
-                    bar.className = "h-full bg-red-500 animate-pulse";
-                }
-
-                if (appState.bonusTimer <= 0) {
-                    clearInterval(appState.bonusIntervalId);
-                    handleBonusTimeout();
-                }
-            }, 1000);
-        }
-
-        // Zastavení času a odhalení správné odpovědi
-        function revealBonusAnswer() {
-            clearInterval(appState.bonusIntervalId);
-            SoundFX.playChime();
-
-            // Zmrazení lišty na aktuální šířce
-            const bar = document.getElementById('bonus-timer-bar');
-            const computedStyle = window.getComputedStyle(bar);
-            const currentWidth = computedStyle.width;
-            bar.style.transition = 'none';
-            bar.style.width = currentWidth;
-
-            // Zobrazení odpovědi a hodnocení
-            document.getElementById('bonus-reveal-btn').classList.add('hidden');
-            document.getElementById('bonus-answer-display').classList.remove('hidden');
-            document.getElementById('bonus-rate-controls').classList.remove('hidden');
-        }
-
-        // Vypršení časového limitu (Timeout) bez bleskového přeskočení
-        function handleBonusTimeout() {
-            SoundFX.playWrong();
-            document.getElementById('bonus-timer-text-container').innerHTML = `<span class="text-red-550 font-extrabold text-xl animate-pulse">⏰ Čas vypršel!</span>`;
-            
-            // Skryjeme tlačítko odhalení a ukážeme odpověď + hodnocení k vyřazení
-            document.getElementById('bonus-reveal-btn').classList.add('hidden');
-            document.getElementById('bonus-answer-display').classList.remove('hidden');
-            document.getElementById('bonus-rate-controls').classList.remove('hidden');
-        }
-
-        // Kliknuto na Správně
-        function handleBonusCorrect() {
-            clearInterval(appState.bonusIntervalId);
-            SoundFX.playCorrect();
-
-            const currentTeam = appState.teams[appState.currentTurnIdx];
-            const points = appState.bonusCurrentCard.points;
-            currentTeam.score += points;
-
-            showToast(`✅ <strong>${currentTeam.name}</strong> správně vyčasoval sloveso a získává <strong>+${points}</strong> b.`);
-
-            // Posun na další tým
-            appState.currentTurnIdx = (appState.currentTurnIdx + 1) % appState.numTeams;
-            triggerNextBonusTurn();
-        }
-
-        // Kliknuto na Špatně nebo vypršel čas (Timeout)
-        function handleBonusWrong(isTimeout) {
-            clearInterval(appState.bonusIntervalId);
-            SoundFX.playWrong();
-
-            const currentTeam = appState.teams[appState.currentTurnIdx];
-            appState.bonusEliminated[currentTeam.id] = true;
-
-            if (isTimeout) {
-                showToast(`⏱️ Vypršel čas! Tým <strong>${currentTeam.name}</strong> byl vyřazen z bonusového kola.`);
-            } else {
-                showToast(`❌ Chyba! Tým <strong>${currentTeam.name}</strong> byl vyřazen z bonusového kola.`);
-            }
-
-            // Posun na další tým
-            appState.currentTurnIdx = (appState.currentTurnIdx + 1) % appState.numTeams;
-            triggerNextBonusTurn();
-        }
-
-        function endBonusRound() {
-            clearInterval(appState.bonusIntervalId);
-            appState.bonusActive = false;
-            showToast("🏁 Bonusové kolo skončilo! Přejděme na celkové vyhlášení vítězů...");
-            endGame();
-        }
-
-        // --- KONEC HRY A STUPNĚ VÍTĚZŮ ---
+        // --- KONEC HRY S POSTUPNÝM ANIMOVANÝM VYHLAŠOVÁNÍM (4. -> 1. MÍSTO) ---
         function endGame() {
             showScreen('screen-results');
-            SoundFX.playChime();
             
-            const sortedTeams = [...appState.teams].sort((a, b) => b.score - a.score);
-            const container = document.getElementById('podium-container');
-            container.innerHTML = '';
+            initConfettiCanvas();
 
-            const podiumPositions = [
-                { rank: 2, team: sortedTeams[1], height: "h-36", color: "bg-slate-800 border-slate-700", medal: "🥈" },
-                { rank: 1, team: sortedTeams[0], height: "h-48", color: "bg-amber-500/20 border-amber-500/40 text-amber-400", medal: "👑" },
-                { rank: 3, team: sortedTeams[2], height: "h-28", color: "bg-slate-850 border-slate-800", medal: "🥉" }
-            ];
+            appState.teams.forEach(team => {
+                team.totalScore = team.score + (team.bonusScore || 0);
+            });
 
-            const renderPositions = appState.numTeams === 2 ? [podiumPositions[0], podiumPositions[1]] : podiumPositions;
-            const uiOrder = appState.numTeams === 2 ? [0, 1] : [0, 1, 2];
+            appState.sortedTeamsResult = [...appState.teams].sort((a, b) => b.totalScore - a.totalScore);
+            
+            appState.revealStep = 0;
+            appState.revealQueue = [];
 
-            uiOrder.forEach(idx => {
-                const pos = renderPositions[idx];
-                if (!pos || !pos.team) return;
+            if (appState.numTeams === 4) {
+                appState.revealQueue.push({ rank: 4, team: appState.sortedTeamsResult[3], elementId: 'fourth-place-card' });
+                appState.revealQueue.push({ rank: 3, team: appState.sortedTeamsResult[2], elementId: 'podium-rank-3' });
+                appState.revealQueue.push({ rank: 2, team: appState.sortedTeamsResult[1], elementId: 'podium-rank-2' });
+                appState.revealQueue.push({ rank: 1, team: appState.sortedTeamsResult[0], elementId: 'podium-rank-1' });
+            } else if (appState.numTeams === 3) {
+                appState.revealQueue.push({ rank: 3, team: appState.sortedTeamsResult[2], elementId: 'podium-rank-3' });
+                appState.revealQueue.push({ rank: 2, team: appState.sortedTeamsResult[1], elementId: 'podium-rank-2' });
+                appState.revealQueue.push({ rank: 1, team: appState.sortedTeamsResult[0], elementId: 'podium-rank-1' });
+            } else if (appState.numTeams === 2) {
+                appState.revealQueue.push({ rank: 2, team: appState.sortedTeamsResult[1], elementId: 'podium-rank-2' });
+                appState.revealQueue.push({ rank: 1, team: appState.sortedTeamsResult[0], elementId: 'podium-rank-1' });
+            }
 
-                container.innerHTML += `
-                    <div class="flex flex-col items-center flex-1 max-w-[200px] z-10 animate-bounce" style="animation-duration: 3s;">
-                        <span class="text-4xl mb-2">${pos.medal}</span>
-                        <span class="font-bold text-slate-100 text-sm text-center line-clamp-1">${pos.team.name}</span>
-                        <span class="text-xs text-slate-400 mb-2">${pos.team.score} b</span>
-                        <div class="w-full ${pos.height} ${pos.color} border-t-4 rounded-t-xl flex items-center justify-center font-extrabold text-2xl shadow-xl">
-                            ${pos.rank}.
+            renderResultsPlaceholders();
+
+            document.getElementById('reveal-controls').classList.remove('hidden');
+            document.getElementById('results-title').innerText = "Finálové vyhlášení";
+            document.getElementById('results-title').className = "text-5xl font-bold my-6 text-slate-400";
+            
+            const revealBtn = document.getElementById('reveal-next-btn');
+            revealBtn.innerText = `🎉 Odhalit ${appState.revealQueue[0].rank}. místo`;
+
+            document.getElementById('play-again-btn').classList.add('hidden');
+            SoundFX.playChime();
+        }
+
+        function renderResultsPlaceholders() {
+            const podiumContainer = document.getElementById('podium-container');
+            podiumContainer.innerHTML = '';
+
+            const cols = [];
+            if (appState.numTeams >= 3) {
+                cols.push({ rank: 2, id: 'podium-rank-2', height: 'h-36', color: 'bg-slate-800/40 border-slate-700/50', medal: '🥈' });
+                cols.push({ rank: 1, id: 'podium-rank-1', height: 'h-48', color: 'bg-amber-500/10 border-amber-500/20', medal: '👑' });
+                cols.push({ rank: 3, id: 'podium-rank-3', height: 'h-28', color: 'bg-slate-855/40 border-slate-800/50', medal: '🥉' });
+            } else {
+                cols.push({ rank: 2, id: 'podium-rank-2', height: 'h-36', color: 'bg-slate-800/40 border-slate-700/50', medal: '🥈' });
+                cols.push({ rank: 1, id: 'podium-rank-1', height: 'h-48', color: 'bg-amber-500/10 border-amber-500/20', medal: '👑' });
+            }
+
+            cols.forEach(col => {
+                podiumContainer.innerHTML += `
+                    <div id="${col.id}" class="flex flex-col items-center flex-1 max-w-[200px] z-10 opacity-20 scale-95 transition-all duration-700 filter blur-[1px]">
+                        <span class="text-4xl mb-2 select-none">🔒</span>
+                        <span class="font-bold text-slate-500 text-sm text-center">???</span>
+                        <span class="text-xs text-slate-600 mb-2">??? b</span>
+                        <div class="w-full ${col.height} ${col.color} border-t-4 border-slate-750 rounded-t-xl flex items-center justify-center font-extrabold text-2xl shadow-xl text-slate-600">
+                            ${col.rank}.
                         </div>
                     </div>
                 `;
             });
 
-            if (appState.numTeams === 4 && sortedTeams[3]) {
-                const fourth = sortedTeams[3];
-                container.innerHTML += `
-                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-slate-950/60 px-6 py-2 rounded-full border border-slate-800 text-xs text-slate-400 z-10">
-                        4. místo: <strong>${fourth.name}</strong> (${fourth.score} b)
+            const fourthContainer = document.getElementById('fourth-place-container');
+            if (appState.numTeams === 4) {
+                fourthContainer.classList.remove('hidden');
+                fourthContainer.innerHTML = `
+                    <div id="fourth-place-card" class="inline-block bg-slate-900/40 px-6 py-2.5 rounded-full border border-slate-800/50 text-sm text-slate-600 shadow-md transition-all duration-700 opacity-20 filter blur-[1px]">
+                        🔒 4. místo: <span class="font-bold">???</span> (??? b)
                     </div>
                 `;
+            } else {
+                fourthContainer.classList.add('hidden');
             }
-
-            initConfetti();
         }
 
-        // --- ÚSPĚŠNÁ GRAFIKA (CONFETTI) ---
-        let confettiInterval;
-        function initConfetti() {
-            const canvas = document.getElementById('confetti-canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
+        function revealNextRank() {
+            if (!appState.revealQueue || appState.revealStep >= appState.revealQueue.length) return;
 
-            const particles = [];
-            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#ec4899'];
+            const item = appState.revealQueue[appState.revealStep];
+            const team = item.team;
+            const rank = item.rank;
+            const elem = document.getElementById(item.elementId);
 
-            for (let i = 0; i < 150; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height - canvas.height,
-                    r: Math.random() * 6 + 4,
-                    d: Math.random() * canvas.height,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    tilt: Math.random() * 10 - 5,
-                    tiltAngleIncremental: Math.random() * 0.07 + 0.02,
-                    tiltAngle: 0
-                });
-            }
-
-            function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                particles.forEach((p, index) => {
-                    p.tiltAngle += p.tiltAngleIncremental;
-                    p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
-                    p.x += Math.sin(p.tiltAngle);
-                    p.tilt = Math.sin(p.tiltAngle - index / 3) * 15;
-
-                    if (p.y > canvas.height) {
-                        p.y = -10;
-                        p.x = Math.random() * canvas.width;
+            if (elem) {
+                elem.classList.remove('opacity-20', 'scale-95', 'filter', 'blur-[1px]');
+                elem.classList.add('opacity-100', 'scale-105', 'ease-out');
+                
+                if (item.elementId === 'fourth-place-card') {
+                    elem.className = "inline-block bg-slate-800/95 px-6 py-2.5 rounded-full border border-emerald-500/20 text-sm text-slate-300 shadow-lg transform scale-110 transition-all duration-500";
+                    setTimeout(() => elem.classList.remove('scale-110'), 500);
+                    elem.innerHTML = `
+                        🏅 4. místo: <span class="font-extrabold text-slate-100">${team.name}</span> 
+                        <span class="text-xs text-slate-400 ml-1.5">(${team.score} + ${team.bonusScore || 0} = <strong>${team.totalScore} b</strong>)</span>
+                    `;
+                    SoundFX.playWrong();
+                    triggerExplosionConfetti(35);
+                } else {
+                    let medal = '🥉';
+                    let colColor = "bg-slate-850 border-slate-800";
+                    let textClass = "text-slate-100";
+                    let rankTextClass = "text-slate-450";
+                    
+                    if (rank === 2) {
+                        medal = '🥈';
+                        colColor = "bg-slate-800 border-slate-700";
+                    } else if (rank === 1) {
+                        medal = '👑';
+                        colColor = "bg-amber-500/20 border-amber-500/40 text-amber-400";
+                        textClass = "text-amber-300 font-extrabold";
+                        rankTextClass = "text-amber-500";
                     }
 
-                    ctx.beginPath();
-                    ctx.lineWidth = p.r;
-                    ctx.strokeStyle = p.color;
-                    ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
-                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
-                    ctx.stroke();
-                });
+                    const heightMap = { 1: 'h-48', 2: 'h-36', 3: 'h-28' };
+                    const height = heightMap[rank];
+
+                    elem.className = `flex flex-col items-center flex-1 max-w-[200px] z-10 transform scale-115 transition-all duration-700 ease-out`;
+                    
+                    elem.innerHTML = `
+                        <span class="text-4xl mb-2 animate-bounce">${medal}</span>
+                        <span class="font-bold text-slate-100 text-sm text-center line-clamp-1 leading-tight mb-0.5">${team.name}</span>
+                        <span class="text-[10px] text-slate-400 mb-0.5">${team.score} + ${team.bonusScore || 0} b</span>
+                        <span class="text-base ${textClass} mb-2 font-bold">${team.totalScore} b</span>
+                        <div class="w-full ${height} ${colColor} border-t-4 rounded-t-xl flex items-center justify-center font-extrabold text-2xl shadow-xl ${rankTextClass}">
+                            ${rank}.
+                        </div>
+                    `;
+
+                    setTimeout(() => elem.classList.remove('scale-115'), 500);
+
+                    if (rank === 1) {
+                        SoundFX.playChime();
+                        SoundFX.playCorrect();
+                        
+                        const title = document.getElementById('results-title');
+                        title.innerText = `¡Felicidades, ${team.name}! 🎉`;
+                        title.className = "text-5xl font-extrabold my-6 text-amber-500 animate-pulse font-serif tracking-wide";
+
+                        triggerContinuousConfetti();
+                    } else {
+                        SoundFX.playChime();
+                        triggerExplosionConfetti(rank === 2 ? 80 : 50);
+                    }
+                }
             }
 
-            if (confettiInterval) clearInterval(confettiInterval);
-            confettiInterval = setInterval(draw, 24);
+            appState.revealStep++;
 
-            setTimeout(() => {
-                clearInterval(confettiInterval);
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }, 15000);
+            const nextBtn = document.getElementById('reveal-next-btn');
+            if (appState.revealStep < appState.revealQueue.length) {
+                const nextRank = appState.revealQueue[appState.revealStep].rank;
+                nextBtn.innerText = `🎉 Odhalit ${nextRank}. místo`;
+            } else {
+                document.getElementById('reveal-controls').classList.add('hidden');
+                document.getElementById('play-again-btn').classList.remove('hidden');
+            }
         }
 
         // --- POMOCNÉ FUNKCE ROZHRANÍ ---
@@ -1534,6 +1592,11 @@
         function resetGame() {
             closeConfirmModal();
             clearInterval(appState.bonusIntervalId);
+            
+            if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+            confettiParticles = [];
+            isContinuousConfetti = false;
+
             appState = {
                 teams: [],
                 numTeams: 4,
@@ -1549,7 +1612,11 @@
                 bonusEliminated: {},
                 bonusCurrentCard: null,
                 bonusTimer: 10,
-                bonusIntervalId: null
+                bonusIntervalId: null,
+                bonusTeamRoundCount: {},
+                revealStep: 0,
+                revealQueue: [],
+                sortedTeamsResult: []
             };
             setTeamCount(4);
             setSyllabusMode("L3");
@@ -1558,7 +1625,6 @@
             document.getElementById('bonus-shortcut-btn').classList.add('hidden');
 
             showScreen('screen-setup');
-            if (confettiInterval) clearInterval(confettiInterval);
             showToast("🔄 Hra byla kompletně restartována.");
         }
     </script>
